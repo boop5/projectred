@@ -1,0 +1,18 @@
+﻿@model EzNintendo.Website.Models.OnSaleModel
+@{
+    ViewData["Title"] = "On Sale!";
+}
+
+<h1>Games Currently On Sale</h1>
+
+<p>Currently are @Model.Games.Count() Games on Sale!</p>
+
+<ul>
+@foreach (var game in Model.Games)
+{
+    <li>
+        @*@Html.ActionLink(game.Title, "GetGame", "Games", game)*@
+    </li>
+}
+</ul>
+

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20191126133100_AddedPriceToGameTable.cs" />
+    <Compile Remove="Migrations\20191126133100_AddedPriceToGameTable.Designer.cs" />
+    <Compile Remove="Migrations\20200131200811_WaitWhat.cs" />
+    <Compile Remove="Migrations\20200131200811_WaitWhat.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="7.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EzNintendo.Common\EzNintendo.Common.csproj" />
+    <ProjectReference Include="..\EzNintendo.Domain\EzNintendo.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

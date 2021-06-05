@@ -1,0 +1,29 @@
+﻿@model EzNintendo.Website.Models.GamePreviewModel
+<div class="game-preview-container">
+
+    <img asp-append-version="false" src="@Model.Cover" alt="@Model.Title" width="500" />
+
+    <p class="game-preview-title">
+        <strong>@Model.Title</strong>
+        @if (Model.Discount > 0)
+        {
+            <span class="game-preview-discount">-@Model.Discount%</span>
+        }
+    </p>
+    <p class="game-preview-note">@Model.Note</p>
+
+    @if(@Model.Price != null)
+    {
+    <p class="game-preview-price">
+        @if(Model.Price == 0)
+        {
+            @("Free!")
+        }
+        else
+        {
+            @Model.Price @Model.Currency
+        }
+    </p>
+    }
+
+</div>

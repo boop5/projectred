@@ -1,0 +1,47 @@
+﻿@using ChartJSCore.Models
+@using EzNintendo.Website.Models
+
+@model EzNintendo.Website.Models.GameModel
+@{
+    ViewData["Title"] = Model.Game.Title;
+}
+
+@if (Model.Game == null)
+{
+    <h1>Error - Game not found!</h1>
+}
+else
+{
+    <h1>@Model.Game.Title</h1>
+    <p>id: @Model.Game.Id</p>
+    <p>@Model.Game.Excerpt</p>
+    @*<img asp-append-version="false"
+         src="https://minio.lsc.pw/eznintendo.images/@{ @Model.Game.FsId }-square.jpg"
+         alt="square" />*@
+    <br />
+    @*<img asp-append-version="false"
+         src="https://minio.lsc.pw/eznintendo.images/@{ @Model.Game.FsId }-wide.jpg"
+         alt="wide" />*@
+    <br />
+
+    <div>
+        @Model.Game.ToString()
+    </div>
+
+    var chart = (Chart)ViewData["chart"];
+    <div><canvas id="lineChart"></canvas></div>
+    @section Scripts {
+        @* <script src="~/lib/Chart.js/dist/Chart.js"></script> *@
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+        <script>
+
+            @Html.Raw(chart.CreateChartCode("lineChart"))
+        </script>
+    }
+
+
+    <p>----------------------------------------------------------</p>
+
+    <partial name="../Templates/GamePreview.cshtml" model='new GamePreviewModel(@Model.Game)' />
+
+}

@@ -1,0 +1,15 @@
+﻿@model EzNintendo.Website.Models.GamesModel
+@{
+    ViewData["Title"] = "Nintendo Switch Games";
+}
+
+<h2>List of all games, bruh!</h2>
+<p>Found @Model.Games.Count() Games!</p>
+<ul>
+    @foreach (var game in Model.Games)
+    {
+        <li>
+            @*@Html.ActionLink(game.Title, "GetGame", "Games", game)*@
+        </li>
+    }
+</ul>
