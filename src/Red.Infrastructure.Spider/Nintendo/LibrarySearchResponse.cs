@@ -13,7 +13,6 @@ namespace Red.Infrastructure.Spider.Nintendo
         public int FoundGames { get; set; }
 
         [JsonPropertyName("docs")]
-        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
         public List<LibrarySearchGame> Games { get; init; } = new();
 
         [JsonPropertyName("start")]
