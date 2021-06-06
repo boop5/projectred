@@ -8,7 +8,6 @@ using Red.Infrastructure.Spider.Json;
 
 namespace Red.Infrastructure.Spider.Nintendo
 {
-    //[DebuggerDisplay("{Title,nq}", Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game")]
     [DebuggerDisplay(
         "{Title,nq}",
         Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}", 
@@ -278,7 +277,6 @@ namespace Red.Infrastructure.Spider.Nintendo
 
         [JsonPropertyName("reg_only_hidden")]
         public bool? reg_only_hidden { get; set; }
-
 
         [JsonPropertyName("match_play_b")]
         public bool? match_play_b { get; set; }
