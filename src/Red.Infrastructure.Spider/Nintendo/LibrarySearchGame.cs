@@ -8,7 +8,11 @@ using Red.Infrastructure.Spider.Json;
 
 namespace Red.Infrastructure.Spider.Nintendo
 {
-    [DebuggerDisplay("{Title,nq}", Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game")]
+    //[DebuggerDisplay("{Title,nq}", Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game")]
+    [DebuggerDisplay(
+        "{Title,nq}",
+        Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}", 
+        Type = "Nintendo eShop Game")]
     public sealed class LibrarySearchGame
     {
         [JsonExtensionData]
