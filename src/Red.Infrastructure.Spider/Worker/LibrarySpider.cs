@@ -1,10 +1,10 @@
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Red.Core.Application;
 
-namespace Red.Infrastructure.Spider
+namespace Red.Infrastructure.Spider.Worker
 {
     public class LibrarySpider : ScheduledWorker
     {
