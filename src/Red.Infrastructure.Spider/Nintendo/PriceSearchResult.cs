@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Red.Infrastructure.Spider.Nintendo
 {
-    [DebuggerDisplay("[{Country,nq}] {Prices.Count,nq} Prices", Type = "Nintendo eShop Price Search Result", Name = "LUL")]
+    [DebuggerDisplay("[{Country,nq}] {Prices.Count,nq} Prices", Type = "Nintendo eShop Price Search Result")]
     internal sealed class PriceSearchResult
     {
         [JsonPropertyName("country")]

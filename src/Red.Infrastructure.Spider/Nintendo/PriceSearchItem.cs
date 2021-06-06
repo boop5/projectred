@@ -12,6 +12,7 @@ namespace Red.Infrastructure.Spider.Nintendo
     internal sealed class PriceSearchItem
     {
         [JsonPropertyName("discount_price")]
+        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
         public PriceSearchDiscount? DiscountPrice { get; set; }
 
         [JsonPropertyName("title_id")]
@@ -19,6 +20,7 @@ namespace Red.Infrastructure.Spider.Nintendo
         public long Nsuid { get; set; }
 
         [JsonPropertyName("regular_price")]
+        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
         public PriceSearchRegular RegularPrice { get; set; } = new();
 
         [JsonPropertyName("sales_status")]
