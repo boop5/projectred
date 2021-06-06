@@ -34,12 +34,13 @@ namespace Red.Infrastructure.Spider.Json
 
                 reader.Read();
             }
-
-            if (list.Any())
+            
+            foreach (var id in list)
             {
-                var nsuid = long.Parse(list[0], NumberStyles.Integer, CultureInfo.InvariantCulture);
-
-                return nsuid.ToString(CultureInfo.InvariantCulture);
+                if (long.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var nsuid))
+                {
+                    return nsuid.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             return null;
