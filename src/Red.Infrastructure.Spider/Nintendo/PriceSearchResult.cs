@@ -9,10 +9,10 @@ namespace Red.Infrastructure.Spider.Nintendo
     {
         [JsonPropertyName("country")]
         [DebuggerDisplay("{Country,nq}", Type = "ISO 3166-1 alpha-2")]
-        public string Country { get; set; } = "";
+        public string Country { get; init; } = "";
 
         [JsonPropertyName("personalized")]
-        public bool Personalized { get; set; }
+        public bool Personalized { get; init; }
 
         [JsonPropertyName("prices")]
         public List<PriceSearchItem> Prices { get; init; } = new();

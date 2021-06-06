@@ -7,12 +7,12 @@ namespace Red.Infrastructure.Spider.Nintendo
     internal sealed class LibrarySearchResponseHeader
     {
         [JsonPropertyName("params")]
-        public LibrarySearchParameters Parameters { get; set; } = new();
+        public LibrarySearchParameters Parameters { get; init; } = new();
 
         [JsonPropertyName("QTime")]
-        public int QTime { get; set; }
+        public int QTime { get; init; }
 
         [JsonPropertyName("status")]
-        public int Status { get; set; }
+        public int Status { get; init; }
     }
 }

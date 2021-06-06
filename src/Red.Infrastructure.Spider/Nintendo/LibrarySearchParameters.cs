@@ -8,23 +8,23 @@ namespace Red.Infrastructure.Spider.Nintendo
     internal sealed class LibrarySearchParameters
     {
         [JsonPropertyName("wt")]
-        public string Format { get; set; } = "";
+        public string Format { get; init; } = "";
 
         [JsonPropertyName("fq")]
-        public string FullQuery { get; set; } = "";
+        public string FullQuery { get; init; } = "";
 
         [JsonPropertyName("q")]
-        public string Query { get; set; } = "";
+        public string Query { get; init; } = "";
 
         [JsonPropertyName("rows")]
         [JsonConverter(typeof(IntJsonConverter))]
-        public int Rows { get; set; }
+        public int Rows { get; init; }
 
         [JsonPropertyName("sort")]
-        public string Sorting { get; set; } = "";
+        public string Sorting { get; init; } = "";
 
         [JsonPropertyName("start")]
         [JsonConverter(typeof(IntJsonConverter))]
-        public int Start { get; set; }
+        public int Start { get; init; }
     }
 }

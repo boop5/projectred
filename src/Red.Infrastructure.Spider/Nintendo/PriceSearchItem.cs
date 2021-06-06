@@ -13,17 +13,17 @@ namespace Red.Infrastructure.Spider.Nintendo
     {
         [JsonPropertyName("discount_price")]
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        public PriceSearchDiscount? DiscountPrice { get; set; }
+        public PriceSearchDiscount? DiscountPrice { get; init; }
 
         [JsonPropertyName("title_id")]
         [JsonConverter(typeof(LongJsonConverter))]
-        public long Nsuid { get; set; }
+        public long Nsuid { get; init; }
 
         [JsonPropertyName("regular_price")]
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        public PriceSearchRegular RegularPrice { get; set; } = new();
+        public PriceSearchRegular RegularPrice { get; init; } = new();
 
         [JsonPropertyName("sales_status")]
-        public string? SalesStatus { get; set; }
+        public string? SalesStatus { get; init; }
     }
 }

@@ -11,17 +11,17 @@ namespace Red.Infrastructure.Spider.Nintendo
     {
         [JsonPropertyName("numFound")]
         [JsonConverter(typeof(IntJsonConverter))]
-        public int FoundGames { get; set; }
+        public int FoundGames { get; init; }
 
         [JsonPropertyName("docs")]
         public List<LibrarySearchGame> Games { get; init; } = new();
 
         [JsonPropertyName("start")]
         [JsonConverter(typeof(IntJsonConverter))]
-        public int Start { get; set; }
+        public int Start { get; init; }
 
         [JsonExtensionData]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public Dictionary<string, object> _extensionData { get; set; } = new();
+        public Dictionary<string, object> _extensionData { get; init; } = new();
     }
 }

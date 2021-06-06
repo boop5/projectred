@@ -7,12 +7,12 @@ namespace Red.Infrastructure.Spider.Nintendo
     internal sealed class PriceSearchRegular
     {
         [JsonPropertyName("amount")]
-        public string? Amount { get; set; }
+        public string? Amount { get; init; }
 
         [JsonPropertyName("currency")]
-        public string? Currency { get; set; }
+        public string? Currency { get; init; }
 
         [JsonPropertyName("raw_value")]
-        public string? RawValue { get; set; }
+        public string? RawValue { get; init; }
     }
 }

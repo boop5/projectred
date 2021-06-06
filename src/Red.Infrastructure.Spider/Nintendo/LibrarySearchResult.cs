@@ -12,13 +12,13 @@ namespace Red.Infrastructure.Spider.Nintendo
     internal sealed class LibrarySearchResult
     {
         [JsonPropertyName("response")]
-        public LibrarySearchResponse Response { get; set; } = new();
+        public LibrarySearchResponse Response { get; init; } = new();
 
         [JsonPropertyName("responseHeader")]
-        public LibrarySearchResponseHeader ResponseHeader { get; set; } = new();
+        public LibrarySearchResponseHeader ResponseHeader { get; init; } = new();
 
         [JsonExtensionData]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public Dictionary<string, object> _extensionData { get; set; } = new();
+        public Dictionary<string, object> _extensionData { get; init; } = new();
     }
 }
