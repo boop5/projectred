@@ -5,7 +5,7 @@ using Red.Core.Application.Json;
 namespace Red.Infrastructure.Spider.Nintendo
 {
     [DebuggerDisplay(
-        "[REGULAR] {RegularPrice.Amount, nq}" +
+        "{RegularPrice != null ? \" [REGULAR] \" + RegularPrice.Amount : System.String.Empty,nq}" +
         "{DiscountPrice != null ? \" [DISCOUNT] \" + DiscountPrice.Amount : System.String.Empty,nq}" +
         "{SalesStatus != \"onsale\" ? \" [STATUS] \" + SalesStatus : System.String.Empty,nq}",
         Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game Price")]
