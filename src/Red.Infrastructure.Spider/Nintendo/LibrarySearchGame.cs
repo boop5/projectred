@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
+using Red.Core.Application.Json;
 using Red.Infrastructure.Spider.Json;
 
 namespace Red.Infrastructure.Spider.Nintendo
 {
+    [DebuggerDisplay("{Title,nq}", Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game")]
     public sealed class LibrarySearchGame
     {
         [JsonPropertyName("excerpt")]
         public string? Excerpt { get; set; }
 
         [JsonPropertyName("fs_id")]
+        [JsonConverter(typeof(NullableLongJsonConverter))]
         public long? FsId { get; set; }
 
         [JsonPropertyName("nsuid_txt")]
         [JsonConverter(typeof(NsuidListJsonConverter))]
-        public string? NsUid { get; set; }
+        public string? Nsuid { get; set; }
 
         [JsonPropertyName("publisher")]
         public string? Publisher { get; set; }

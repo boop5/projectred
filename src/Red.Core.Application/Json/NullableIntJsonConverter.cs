@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace Red.Core.Application.Json
 {
-    public sealed class IntJsonConverter : JsonConverter<int>
+    public sealed class NullableIntJsonConverter : JsonConverter<int?>
     {
-        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType is JsonTokenType.String)
             {
@@ -22,13 +22,17 @@ namespace Red.Core.Application.Json
             {
                 return reader.GetInt32();
             }
+            else if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
 
             throw new ArgumentException("Invalid type");
         }
 
-        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, int? value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
+            writer.WriteStringValue(value?.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

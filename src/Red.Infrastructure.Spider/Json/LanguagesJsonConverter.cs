@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace Red.Infrastructure.Spider.Json
 {
-    internal sealed class LanguagesJsonConverter : JsonConverter<IEnumerable<string>?>
+    internal sealed class LanguagesJsonConverter : JsonConverter<List<string>?>
     {
-        public override IEnumerable<string>? Read(
+        public override List<string>? Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
             JsonSerializerOptions options)
@@ -48,7 +48,7 @@ namespace Red.Infrastructure.Spider.Json
             return null;
         }
 
-        public override void Write(Utf8JsonWriter writer, IEnumerable<string>? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, List<string>? value, JsonSerializerOptions options)
         {
             writer.WriteStartArray();
 

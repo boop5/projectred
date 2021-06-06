@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Red.Infrastructure.Spider.Nintendo
 {
+    [DebuggerDisplay("Query: {Parameters.Query,nq} ({QTime,nq}ms)")]
     internal sealed class LibrarySearchResponseHeader
     {
         [JsonPropertyName("params")]

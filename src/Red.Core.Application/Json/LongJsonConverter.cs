@@ -5,28 +5,28 @@ using System.Text.Json.Serialization;
 
 namespace Red.Core.Application.Json
 {
-    public sealed class IntJsonConverter : JsonConverter<int>
+    public sealed class LongJsonConverter : JsonConverter<long>
     {
-        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType is JsonTokenType.String)
             {
                 var stringValue = reader.GetString();
 
-                if (int.TryParse(stringValue, out var n))
+                if (long.TryParse(stringValue, out var n))
                 {
                     return n;
                 }
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                return reader.GetInt32();
+                return reader.GetInt64();
             }
 
             throw new ArgumentException("Invalid type");
         }
 
-        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
         }
