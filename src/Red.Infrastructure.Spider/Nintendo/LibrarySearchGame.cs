@@ -12,7 +12,7 @@ namespace Red.Infrastructure.Spider.Nintendo
         "{Title,nq}",
         Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}", 
         Type = "Nintendo eShop Game")]
-    public sealed class LibrarySearchGame
+    internal sealed class LibrarySearchGame
     {
         [JsonExtensionData]
         [SuppressMessage("ReSharper", "InconsistentNaming")]

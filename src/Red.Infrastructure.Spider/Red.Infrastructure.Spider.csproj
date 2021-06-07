@@ -20,5 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Red.Core.Application\Red.Core.Application.csproj" />
+    <ProjectReference Include="..\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj" />
   </ItemGroup>
 </Project>
