@@ -1,10 +1,14 @@
-﻿namespace Red.Core.Domain.Models
+﻿using System.Diagnostics;
+
+namespace Red.Core.Domain.Models
 {
     public enum EshopSalesStatus
     {
         OnSale,
         NotFound,
-        SalesTermination
+        SalesTermination,
+        Unreleased,
+        Unknown
     }
 
     public enum EshopGameSorting

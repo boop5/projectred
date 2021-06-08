@@ -20,8 +20,8 @@ namespace Red.Infrastructure.Persistence.Configurations
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
 
-            builder.HasKey(x => x.Id)
-                   .HasName("PK_SwitchGameId");
+            builder.HasKey(x => x.EntityId)
+                   .HasName("PK_SwitchGameEntityId");
 
             builder.HasIndex(x => x.Slug)
                    .HasDatabaseName("IX_SwitchGameSlug")

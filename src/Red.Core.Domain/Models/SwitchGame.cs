@@ -7,17 +7,16 @@ namespace Red.Core.Domain.Models
     {
         #region should be in another model 
 
-        public Guid Id { get; init; }
-        public DateTime Created { get; init; }
-        public DateTime? Updated { get; init; }
-
-        public List<PriceRecord>? PriceHistory { get; set; }
+        public Guid EntityId { get; init; }
+        public DateTime EntityCreated { get; init; }
+        public DateTime? EntityUpdated { get; init; }
 
         #endregion
 
         public float? RegularPrice { get; init; }
         public float? AllTimeLow { get; init; }
         public float? AllTimeHigh { get; init; }
+        public List<PriceRecord>? PriceHistory { get; set; }
 
         public string? Nsuid { get; init; }
         public string? Title { get; init; }

@@ -16,7 +16,7 @@ namespace Red.Infrastructure.NintendoApi.Models
         public PriceSearchDiscount? DiscountPrice { get; init; }
 
         [JsonPropertyName("title_id")]
-        [JsonConverter(typeof(LongJsonConverter))]
+        [JsonConverter(typeof(LongJsonConverter))] // todo: convert to string
         public long Nsuid { get; init; }
 
         [JsonPropertyName("regular_price")]

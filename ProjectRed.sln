@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Spider",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Persistence", "src\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj", "{3D2BF284-566D-4489-BEE9-D60983EEEF3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.Infrastructure.NintendoApi", "src\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj", "{D1F9321D-613F-4AC1-89E5-A6B473F98F94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.NintendoApi", "src\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj", "{D1F9321D-613F-4AC1-89E5-A6B473F98F94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

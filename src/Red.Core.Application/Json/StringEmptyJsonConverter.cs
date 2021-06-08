@@ -29,7 +29,7 @@ namespace Red.Core.Application.Json
 
         public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value ?? string.Empty);
+            writer.WriteStringValue(value);
         }
     }
 }
