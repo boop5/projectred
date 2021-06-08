@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Red.Core.Application.Json;
-using Red.Infrastructure.Spider.Json;
+using Red.Infrastructure.NintendoApi.Json;
 
-namespace Red.Infrastructure.Spider.Nintendo
+namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay(
         "{Title,nq}",
-        Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}", 
+        Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}",
         Type = "Nintendo eShop Game")]
     internal sealed class LibrarySearchGame
     {
@@ -39,9 +39,6 @@ namespace Red.Infrastructure.Spider.Nintendo
 
         [JsonPropertyName("age_rating_value")]
         public string? AgeRatingValue { get; init; }
-
-        [JsonPropertyName("pretty_game_categories_txt")]
-        public List<string>? Categories { get; init; }
 
         [JsonPropertyName("change_date")]
         public DateTime? Changed { get; init; }
@@ -202,6 +199,9 @@ namespace Red.Infrastructure.Spider.Nintendo
         [JsonPropertyName("pretty_date_s")]
         public string? PrettyDate { get; init; }
 
+        [JsonPropertyName("pretty_game_categories_txt")]
+        public List<string>? PrettyGameCategories { get; init; }
+
         [JsonPropertyName("price_discounted_f")]
         public float? PriceDiscounted { get; init; }
 
@@ -317,6 +317,7 @@ namespace Red.Infrastructure.Spider.Nintendo
         public string? wishlist_email_banner460w_image_url_s { get; init; }
         public string? gift_finder_wishlist_image_url_s { get; init; }
         public string? gift_finder_detail_page_image_url_s { get; init; }
+
         public string? gift_finder_carousel_image_url_s { get; init; }
         // ReSharper restore InconsistentNaming
     }

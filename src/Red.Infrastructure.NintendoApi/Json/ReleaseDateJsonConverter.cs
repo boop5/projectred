@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Red.Infrastructure.Spider.Json
+namespace Red.Infrastructure.NintendoApi.Json
 {
     internal sealed class ReleaseDateJsonConverter : JsonConverter<DateTime?>
     {

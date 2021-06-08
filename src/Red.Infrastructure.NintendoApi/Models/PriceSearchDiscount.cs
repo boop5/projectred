@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace Red.Infrastructure.Spider.Nintendo
+namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay("{Amount,nq}", Type = "Discount")]
     internal sealed class PriceSearchDiscount

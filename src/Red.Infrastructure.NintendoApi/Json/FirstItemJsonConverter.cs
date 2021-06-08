@@ -4,14 +4,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Red.Infrastructure.Spider.Json
+namespace Red.Infrastructure.NintendoApi.Json
 {
-    internal sealed class LanguagesJsonConverter : JsonConverter<List<string>?>
+    internal sealed class FirstItemJsonConverter : JsonConverter<string?>
     {
-        public override List<string>? Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
+        public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var list = new List<string>();
 
@@ -27,13 +24,10 @@ namespace Red.Infrastructure.Spider.Json
                 if (reader.TokenType is JsonTokenType.String)
                 {
                     var value = reader.GetString();
-
-                    // nintendo puts languages in as csv in an array [ "a, b, c" ]
-                    var languages = value?.Split(",", StringSplitOptions.RemoveEmptyEntries);
-
-                    if (languages is not null)
+                    
+                    if (value != null)
                     {
-                        list.AddRange(languages);
+                        list.Add(value);
                     }
                 }
 
@@ -42,24 +36,19 @@ namespace Red.Infrastructure.Spider.Json
 
             if (list.Any())
             {
-                return list;
+                return list.First();
             }
 
             return null;
         }
 
-        public override void Write(Utf8JsonWriter writer, List<string>? value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
         {
             writer.WriteStartArray();
 
             if (value != null)
             {
-                var languages = value.Where(x => !string.IsNullOrWhiteSpace(x));
-
-                foreach (var language in languages)
-                {
-                    writer.WriteStringValue(language);
-                }
+                writer.WriteStringValue(value);
             }
 
             writer.WriteEndArray();

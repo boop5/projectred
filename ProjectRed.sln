@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Core.Domain", "src\Red.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Spider", "src\Red.Infrastructure.Spider\Red.Infrastructure.Spider.csproj", "{755978AA-2A10-4ADE-9474-F8CA9F039610}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.Infrastructure.Persistence", "src\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj", "{3D2BF284-566D-4489-BEE9-D60983EEEF3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Persistence", "src\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj", "{3D2BF284-566D-4489-BEE9-D60983EEEF3C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.Infrastructure.NintendoApi", "src\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj", "{D1F9321D-613F-4AC1-89E5-A6B473F98F94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{3D2BF284-566D-4489-BEE9-D60983EEEF3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D2BF284-566D-4489-BEE9-D60983EEEF3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D2BF284-566D-4489-BEE9-D60983EEEF3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1F9321D-613F-4AC1-89E5-A6B473F98F94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1F9321D-613F-4AC1-89E5-A6B473F98F94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1F9321D-613F-4AC1-89E5-A6B473F98F94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1F9321D-613F-4AC1-89E5-A6B473F98F94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

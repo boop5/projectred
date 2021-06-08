@@ -1,0 +1,13 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Red.Core.Domain.Models;
+
+namespace Red.Core.Application.Interfaces
+{
+    public interface IEshop
+    {
+        Task<IEnumerable<SwitchGame>> SearchGames(EshopGameQuery query);
+        Task<SwitchGamePrice> GetPrice(EshopPriceQuery query);
+        Task<IEnumerable<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query);
+    }
+}

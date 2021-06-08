@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Red.Core.Application.Json
 {
@@ -27,8 +23,12 @@ namespace Red.Core.Application.Json
                 try
                 {
                     var value = reader.GetString();
-                    var item = (T)Convert.ChangeType(value, typeof(T));
-                    list.Add(item);
+                    
+                    if (value != null)
+                    {
+                        var item = (T) (Convert.ChangeType(value, typeof(T)));
+                        list.Add(item);
+                    }
                 }
                 catch
                 {

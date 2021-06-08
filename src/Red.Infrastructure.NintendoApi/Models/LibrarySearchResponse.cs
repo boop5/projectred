@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Red.Core.Application.Json;
 
-namespace Red.Infrastructure.Spider.Nintendo
+namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay("{Games.Count,nq} Games")]
     internal sealed class LibrarySearchResponse

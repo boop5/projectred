@@ -5,14 +5,19 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
+        #region should be in another model 
+
         public Guid Id { get; init; }
         public DateTime Created { get; init; }
         public DateTime? Updated { get; init; }
 
+        public List<PriceRecord>? PriceHistory { get; set; }
+
+        #endregion
+
         public float? RegularPrice { get; init; }
         public float? AllTimeLow { get; init; }
         public float? AllTimeHigh { get; init; }
-        public List<PriceRecord>? PriceHistory { get; set; }
 
         public string? Nsuid { get; init; }
         public string? Title { get; init; }

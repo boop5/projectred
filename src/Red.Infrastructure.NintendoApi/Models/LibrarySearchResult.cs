@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Red.Infrastructure.Spider.Nintendo
+namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay(
         "{Response.Games.Count,nq} Games ({ResponseHeader.Parameters.Start,nq}:{ResponseHeader.Parameters.Rows,nq})", 

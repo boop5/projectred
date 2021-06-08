@@ -1,8 +1,8 @@
-﻿namespace Red.Infrastructure.Spider.Util
+﻿namespace Red.Infrastructure.NintendoApi.Util
 {
     internal static class Constants
     {
-        public const string NintendoEUUrl = "https://searching.nintendo-europe.com/";
+        public const string NintendoEUUrl = "https://searching.nintendo-europe.com";
         public const string NintendoJPUrl = "https://www.nintendo.co.jp";
         public const string NintendoUSUrl = "https://www.nintendo.com";
     }

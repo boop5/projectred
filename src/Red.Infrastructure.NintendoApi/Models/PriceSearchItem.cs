@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Red.Core.Application.Json;
 
-namespace Red.Infrastructure.Spider.Nintendo
+namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay(
         "{RegularPrice != null ? \" [REGULAR] \" + RegularPrice.Amount : System.String.Empty,nq}" +

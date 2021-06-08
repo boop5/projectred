@@ -6,7 +6,7 @@ namespace Red.Infrastructure.Persistence
 {
     internal sealed class LibraryContext : DbContext
     {
-        #pragma warning disable 8618 Set by EfCore
+        #pragma warning disable 8618
         public LibraryContext(DbContextOptions<LibraryContext> options)
             : base(options)
         {
