@@ -18,6 +18,9 @@ namespace Red.Infrastructure.Persistence
 
             services.AddTransient<ISwitchGameRepository, SwitchGameRepository>();
 
+            using var ctx = services.BuildServiceProvider().GetRequiredService<LibraryContext>();
+            ctx.Database.Migrate();
+
             return services;
         }
 

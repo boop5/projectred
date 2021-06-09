@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Red.Core.Domain.Models
+﻿namespace Red.Core.Domain.Models
 {
     public enum EshopSalesStatus
     {

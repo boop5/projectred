@@ -220,10 +220,6 @@ namespace Red.Infrastructure.NintendoApi.Models
         //[JsonConverter(typeof(FirstItemJsonConverter))]
         //public string? ProductCodeTXT { get; init; }
 
-        //[JsonPropertyName("nsuid_txt")]
-        //[JsonConverter(typeof(NsuidListJsonConverter))]
-        public string? Nsuid { get; init; } = "fakefakefake";
-
         [JsonPropertyName("nsuid_txt")]
         public List<string>? Nsuids { get; init; }
 
@@ -292,11 +288,13 @@ namespace Red.Infrastructure.NintendoApi.Models
 
         #region unknown
 
+        // ReSharper disable InconsistentNaming
         [JsonPropertyName("reg_only_hidden")]
         public bool? reg_only_hidden { get; init; }
 
         [JsonPropertyName("match_play_b")]
         public bool? match_play_b { get; init; }
+        // ReSharper restore InconsistentNaming
 
         #endregion
 

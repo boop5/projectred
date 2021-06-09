@@ -23,15 +23,17 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.HasKey(x => new {x.ProductCode, x.Region})
                    .HasName("PK_SwitchGame_ProductCodeRegion");
 
-            //builder.HasIndex(x => x.Slug)
-            //       .HasDatabaseName("IX_SwitchGameSlug")
-            //       .IsUnique();
+            builder.HasIndex(x => x.ProductCode)
+                   .HasDatabaseName("IX_SwitchGameProductCode")
+                   .IsUnique();
 
             builder.HasIndex(x => x.Title)
                    .HasDatabaseName("IX_SwitchGameTitle");
 
-            builder.HasIndex(x => x.Title)
-                   .HasDatabaseName("IX_SwitchGameTitle");
+            builder.HasIndex(x => x.Slug)
+                   .HasDatabaseName("IX_SwitchGameSlug");      
+            
+            // todo: add index for website filters (search by category, ..)
 
             builder.Property(x => x.Categories)
                    .HasConversion(

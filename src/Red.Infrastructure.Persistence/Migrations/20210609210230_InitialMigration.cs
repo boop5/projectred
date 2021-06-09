@@ -13,11 +13,11 @@ namespace Red.Infrastructure.Persistence.Migrations
                 {
                     ProductCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Region = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PriceHistory = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RegularPrice = table.Column<float>(type: "real", nullable: true),
                     AllTimeLow = table.Column<float>(type: "real", nullable: true),
                     AllTimeHigh = table.Column<float>(type: "real", nullable: true),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Nsuids = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -46,10 +46,15 @@ namespace Red.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_SwitchGameProductCode",
+                table: "Games",
+                column: "ProductCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SwitchGameSlug",
                 table: "Games",
-                column: "Slug",
-                unique: true);
+                column: "Slug");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SwitchGameTitle",

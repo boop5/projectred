@@ -94,7 +94,6 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Slug")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool?>("SupportsCloudSave")
@@ -109,8 +108,11 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.HasKey("ProductCode", "Region")
                         .HasName("PK_SwitchGame_ProductCodeRegion");
 
-                    b.HasIndex("Slug")
+                    b.HasIndex("ProductCode")
                         .IsUnique()
+                        .HasDatabaseName("IX_SwitchGameProductCode");
+
+                    b.HasIndex("Slug")
                         .HasDatabaseName("IX_SwitchGameSlug");
 
                     b.HasIndex("Title")

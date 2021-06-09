@@ -17,11 +17,11 @@ namespace Red.Core.Domain.Models
             {
                 if (value.Count < 1)
                 {
-                    throw new ArgumentOutOfRangeException("nsuids", "Minimum 1 id required");
+                    throw new ArgumentOutOfRangeException(nameof(Nsuids), "Minimum 1 id required");
                 }
                 if (value.Count > 50)
                 {
-                    throw new ArgumentOutOfRangeException("nsuids", "Maximum 50 ids allowed");
+                    throw new ArgumentOutOfRangeException(nameof(Nsuids), "Maximum 50 ids allowed");
                 }
 
                 _nsuids = value;
