@@ -8,7 +8,6 @@ namespace Red.Core.Domain.Models
     {
         #region Required
         
-        public string Slug { get; init; } = "";
         public string ProductCode { get; init; } = "";
         public string Region { get; init; } = "";
 
@@ -23,6 +22,7 @@ namespace Red.Core.Domain.Models
 
         #region Other
 
+        public string? Slug { get; init; }
         public List<string>? Nsuids { get; init; }
         public string? Title { get; init; }
         public string? Description { get; init; }

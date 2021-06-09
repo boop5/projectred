@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -23,6 +22,13 @@ namespace Red.Infrastructure.NintendoApi
 
     public class Eshop : IEshop
     {
+        private readonly ISlugBuilder _slugBuilder;
+
+        public Eshop(IEshopSlugBuilder slugBuilder)
+        {
+            _slugBuilder = slugBuilder;
+        }
+
         public async Task<SwitchGamePrice> GetPrice(EshopPriceQuery query)
         {
             var prices = await GetPrices(new EshopMultiPriceQuery(query.Nsuid));
@@ -81,7 +87,17 @@ namespace Red.Infrastructure.NintendoApi
             return new List<SwitchGame>();
         }
 
-        private static SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
+        private string? BuildSlug(LibrarySearchGame game)
+        {
+            if (string.IsNullOrWhiteSpace(game.Title))
+            {
+                return null;
+            }
+
+            return _slugBuilder.Build(game.Title);
+        }
+
+        private SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
         {
             return new()
             {
@@ -102,9 +118,8 @@ namespace Red.Infrastructure.NintendoApi
                 RemovedFromEshop = game.RemovedFromEshop,
                 Title = game.Title,
                 SupportsCloudSave = game.SupportsCloudSave,
-                // todo: oooof. Use ISlugBuilder
-                Slug = (string.IsNullOrWhiteSpace(game.Title) ? game.Nsuid! : game.Title!.Replace(" ", "-")).ToLowerInvariant(),
-                // todo: Insert actual reason
+                Slug = BuildSlug(game),
+                // todo: Insert actual region
                 Region = "EU",
                 ProductCode = game.ProductCodeSS![0]
                 // todo: add missing fields
