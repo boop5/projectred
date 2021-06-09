@@ -7,6 +7,9 @@ namespace Red.Infrastructure.NintendoApi
     {
         public static IServiceCollection AddNintendoApi(this IServiceCollection services)
         {
+            services.AddTransient<EshopHttpClient>();
+            services.AddTransient<EshopConverter>();
+            services.AddTransient<EshopUrlBuilder>();
             services.AddTransient<IEshop, Eshop>();
 
             return services;
