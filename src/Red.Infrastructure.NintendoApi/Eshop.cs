@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Models;
@@ -14,6 +16,11 @@ using Red.Infrastructure.NintendoApi.Util;
 
 namespace Red.Infrastructure.NintendoApi
 {
+    // https://github.com/cutecore/Nintendo-Switch-eShop-API
+    // todo: sales query            https://ec.nintendo.com/api/DE/de/search/sales?count=10&offset=0
+    // todo: new query              https://ec.nintendo.com/api/DE/de/search/new?count=30&offset=0
+    // todo: download ranking query https://ec.nintendo.com/api/DE/de/search/ranking?count=10&offset=0
+
     public class Eshop : IEshop
     {
         public async Task<SwitchGamePrice> GetPrice(EshopPriceQuery query)
@@ -25,7 +32,6 @@ namespace Red.Infrastructure.NintendoApi
 
         public async Task<IReadOnlyCollection<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query)
         {
-            //var url = "https://api.ec.nintendo.com/v1/price?country=DE&lang=en&limit=50&ids=70010000003781&ids=70010000001020&ids=70010000010138&ids=70010000020399
             var q = string.Join(null, query.Nsuids.Take(50).Select(x => $"&ids={x}"));
             var country = "DE";
             var language = "en";
@@ -46,32 +52,30 @@ namespace Red.Infrastructure.NintendoApi
             return new List<SwitchGamePrice>();
         }
 
+        public async Task<int> GetTotalGames()
+        {
+            var search = await GetLibrary(new EshopGameQuery {Index = 0, Offset = 1});
+
+            if (search != null)
+            {
+                return search.Response.FoundGames;
+            }
+
+            return 0;
+        }
+
         public async Task<IReadOnlyCollection<SwitchGame>> SearchGames(EshopGameQuery query)
         {
-            var language = "en";
-            var regionUrl = Constants.NintendoEUUrl;
+            var library = await GetLibrary(query);
 
-            var baseUrl = $"{regionUrl}/{language}";
-            var filter = $"q={query.Term}" +
-                         $"&start={query.Index}" +
-                         $"&rows={query.Offset}" +
-                         "&fq=type:GAME " +
-                         "AND ((playable_on_txt: \"HAC\")) " +
-                         "AND system_type:nintendoswitch* ";
-            // "AND sorting_title:* " +
-            // "AND *:*";
-            var url = $"{baseUrl}/select?{filter}";
-            var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
+            if (library != null)
             {
-                var body = await response.Content.ReadAsStringAsync();
-                var deserialized = JsonSerializer.Deserialize<LibrarySearchResult>(body);
-
-                if (deserialized != null)
-                {
-                    return deserialized.Response.Games.Select(ConvertToSwitchGame).ToList();
-                }
+                return library.Response.Games
+                              .Where(x => x.ProductCodeSS?.Count == 1)
+                              // some games have duplicate entries in the result, so lets remove them
+                              .DistinctBy(x => x.ProductCodeSS![0])
+                              .Select(ConvertToSwitchGame)
+                              .ToList();
             }
 
             return new List<SwitchGame>();
@@ -81,7 +85,7 @@ namespace Red.Infrastructure.NintendoApi
         {
             return new()
             {
-                Nsuid = game.Nsuid,
+                Nsuids = game.Nsuids,
                 AgeRating = game.AgeRating,
                 Categories = game.GameCategories,
                 Coop = game.CoopPlay,
@@ -97,7 +101,13 @@ namespace Red.Infrastructure.NintendoApi
                 ReleaseDate = game.ReleaseDate,
                 RemovedFromEshop = game.RemovedFromEshop,
                 Title = game.Title,
-                SupportsCloudSave = game.SupportsCloudSave
+                SupportsCloudSave = game.SupportsCloudSave,
+                // todo: oooof. Use ISlugBuilder
+                Slug = (string.IsNullOrWhiteSpace(game.Title) ? game.Nsuid! : game.Title!.Replace(" ", "-")).ToLowerInvariant(),
+                // todo: Insert actual reason
+                Region = "EU",
+                ProductCode = game.ProductCodeSS![0]
+                // todo: add missing fields
             };
         }
 
@@ -111,7 +121,13 @@ namespace Red.Infrastructure.NintendoApi
                 regularPrice = rp;
             }
 
-            currentPrice = float.TryParse(price.DiscountPrice?.RawValue, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var dp) ? dp : regularPrice;
+            currentPrice = float.TryParse(
+                price.DiscountPrice?.RawValue,
+                NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture,
+                out var dp)
+                ? dp
+                : regularPrice;
 
             // todo: remove .ToString()
             return new SwitchGamePrice(price.Nsuid!.ToString())
@@ -131,6 +147,39 @@ namespace Red.Infrastructure.NintendoApi
             http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             return http;
+        }
+
+        private async Task<LibrarySearchResult?> GetLibrary(EshopGameQuery query)
+        {
+            var locale = "en";
+            var regionUrl = Constants.NintendoEUUrl;
+
+            var baseUrl = $"{regionUrl}/{locale}/select";
+            var filter = $"q={query.Term}" +
+                         $"&start={query.Index}" +
+                         $"&rows={query.Offset}" +
+                         "&sort=dates_released_dts asc" +
+                         // "&sort=sorting_title asc" +
+                         "&wt=json " +
+                         "&bq=!deprioritise_b:true^999 " +
+                         "&fq=type:GAME " +
+                         "AND ((playable_on_txt: \"HAC\")) " +
+                         "AND system_type:nintendoswitch* " +
+                         "AND product_code_txt:* " +
+                         "AND sorting_title:* " +
+                         "AND *:*";
+            var url = $"{baseUrl}?{filter}";
+            var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                var deserialized = JsonSerializer.Deserialize<LibrarySearchResult>(body);
+
+                return deserialized;
+            }
+
+            return null;
         }
 
         private static EshopSalesStatus StringToSalesStatus(string? text)

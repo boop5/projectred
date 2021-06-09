@@ -1,26 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
-        #region should be in another model 
-
-        public Guid EntityId { get; init; }
-        public DateTime EntityCreated { get; init; }
-        public DateTime? EntityUpdated { get; init; }
+        #region Required
+        
+        public string Slug { get; init; } = "";
+        public string ProductCode { get; init; } = "";
+        public string Region { get; init; } = "";
 
         #endregion
 
+        #region Pricing (might move to its own table?)
+        public List<PriceRecord>? PriceHistory { get; init; }
         public float? RegularPrice { get; init; }
         public float? AllTimeLow { get; init; }
         public float? AllTimeHigh { get; init; }
-        public List<PriceRecord>? PriceHistory { get; set; }
+        #endregion
 
-        public string? Nsuid { get; init; }
+        #region Other
+
+        public List<string>? Nsuids { get; init; }
         public string? Title { get; init; }
-        public string Slug { get; init; } = "";
         public string? Description { get; init; }
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
@@ -40,11 +44,93 @@ namespace Red.Core.Domain.Models
 
         /// <summary>List of uris.</summary>
         public List<string>? Screenshots { get; init; }
-        
+
         /// <summary>uri to image.</summary>
         public string? Cover { get; init; }
 
         /// <summary>Meant to use to sort search results.</summary>
-        public int Popularity { get; init; } = 0;
+        /// <remarks>Higher numbers mean less popularity.</remarks>
+        public int Popularity { get; init; } = int.MaxValue;
+
+        #endregion
+
+        #region Equality
+
+        
+        public bool Equals(SwitchGame? other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Nullable.Equals(RegularPrice, other.RegularPrice)
+                   && Nullable.Equals(AllTimeLow, other.AllTimeLow)
+                   && Nullable.Equals(AllTimeHigh, other.AllTimeHigh)
+                   && Nullable.Equals(ReleaseDate, other.ReleaseDate)
+                   && Title == other.Title
+                   && Slug == other.Slug
+                   && Description == other.Description
+                   && Publisher == other.Publisher
+                   && Developer == other.Developer
+                   && AgeRating == other.AgeRating
+                   && DownloadSize == other.DownloadSize
+                   && MinPlayers == other.MinPlayers
+                   && MaxPlayers == other.MaxPlayers
+                   && Coop == other.Coop
+                   && DemoAvailable == other.DemoAvailable
+                   && SupportsCloudSave == other.SupportsCloudSave
+                   && RemovedFromEshop == other.RemovedFromEshop
+                   && VoucherPossible == other.VoucherPossible
+                   && Cover == other.Cover
+                   && Popularity == other.Popularity
+                   && (PriceHistory ?? Enumerable.Empty<PriceRecord>()).SequenceEqual(other.PriceHistory ?? Enumerable.Empty<PriceRecord>())
+                   && (Nsuids ?? Enumerable.Empty<string>()).SequenceEqual(other.Nsuids ?? Enumerable.Empty<string>())
+                   && (Categories ?? Enumerable.Empty<string>()).SequenceEqual(other.Categories ?? Enumerable.Empty<string>())
+                   && (Languages ?? Enumerable.Empty<string>()).SequenceEqual(other.Languages ?? Enumerable.Empty<string>())
+                   && (PlayModes ?? Enumerable.Empty<string>()).SequenceEqual(other.PlayModes ?? Enumerable.Empty<string>())
+                   && (Screenshots ?? Enumerable.Empty<string>()).SequenceEqual(other.Screenshots ?? Enumerable.Empty<string>());
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+
+            hashCode.Add(RegularPrice);
+            hashCode.Add(AllTimeLow);
+            hashCode.Add(AllTimeHigh);
+            hashCode.Add(PriceHistory);
+            hashCode.Add(Nsuids);
+            hashCode.Add(Title);
+            hashCode.Add(Slug);
+            hashCode.Add(Description);
+            hashCode.Add(Publisher);
+            hashCode.Add(Developer);
+            hashCode.Add(ReleaseDate);
+            hashCode.Add(Categories);
+            hashCode.Add(AgeRating);
+            hashCode.Add(DownloadSize);
+            hashCode.Add(MinPlayers);
+            hashCode.Add(MaxPlayers);
+            hashCode.Add(Coop);
+            hashCode.Add(DemoAvailable);
+            hashCode.Add(Languages);
+            hashCode.Add(PlayModes);
+            hashCode.Add(SupportsCloudSave);
+            hashCode.Add(RemovedFromEshop);
+            hashCode.Add(VoucherPossible);
+            hashCode.Add(Screenshots);
+            hashCode.Add(Cover);
+            hashCode.Add(Popularity);
+
+            return hashCode.ToHashCode();
+        }
+
+        #endregion
     }
 }

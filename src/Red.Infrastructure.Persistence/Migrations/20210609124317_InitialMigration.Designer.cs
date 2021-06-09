@@ -10,7 +10,7 @@ using Red.Infrastructure.Persistence;
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20210607222522_InitialMigration")]
+    [Migration("20210609124317_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,9 +23,11 @@ namespace Red.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Red.Core.Domain.Models.SwitchGame", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProductCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("AgeRating")
                         .HasColumnType("int");
@@ -44,9 +46,6 @@ namespace Red.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Cover")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool?>("DemoAvailable")
                         .HasColumnType("bit");
@@ -69,7 +68,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<int?>("MinPlayers")
                         .HasColumnType("int");
 
-                    b.Property<string>("Nsuid")
+                    b.Property<string>("Nsuids")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlayModes")
@@ -106,14 +105,11 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("VoucherPossible")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id")
-                        .HasName("PK_SwitchGameId");
+                    b.HasKey("ProductCode", "Region")
+                        .HasName("PK_SwitchGame_ProductCodeRegion");
 
                     b.HasIndex("Slug")
                         .IsUnique()

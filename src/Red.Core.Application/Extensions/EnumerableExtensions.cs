@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Red.Core.Application.Extensions
@@ -13,6 +14,12 @@ namespace Red.Core.Application.Extensions
             return source.Select((x, i) => new {Index = i, Value = x})
                          .GroupBy(x => x.Index / chunkSize)
                          .Select(x => x.Select(v => v.Value).ToList());
+        }
+
+        public static IEnumerable<TSource> DistinctBy<TSource, TKey>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        {
+            return source.GroupBy(keySelector).Select(x => x.First());
         }
     }
 }

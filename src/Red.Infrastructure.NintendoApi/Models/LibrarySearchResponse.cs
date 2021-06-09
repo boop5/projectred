@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -9,6 +10,11 @@ namespace Red.Infrastructure.NintendoApi.Models
     [DebuggerDisplay("{Games.Count,nq} Games")]
     internal sealed class LibrarySearchResponse
     {
+        [JsonExtensionData]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public ReadOnlyDictionary<string, object> _extensionData { get; init; } 
+            = new(new Dictionary<string, object>());
+
         [JsonPropertyName("numFound")]
         [JsonConverter(typeof(IntJsonConverter))]
         public int FoundGames { get; init; }
@@ -19,9 +25,5 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonPropertyName("start")]
         [JsonConverter(typeof(IntJsonConverter))]
         public int Start { get; init; }
-
-        [JsonExtensionData]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public Dictionary<string, object> _extensionData { get; init; } = new();
     }
 }

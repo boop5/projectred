@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -33,7 +35,7 @@ namespace Red.Infrastructure.NintendoApi.Json
 
                 reader.Read();
             }
-            
+
             foreach (var id in list)
             {
                 if (long.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var nsuid))

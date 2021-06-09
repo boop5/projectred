@@ -8,6 +8,8 @@ namespace Red.Core.Domain.Models
     {
         public DateTime Date { get; init; }
         public decimal Price { get; init; }
+
         public string Currency { get; init; } = "";
+        public string Country { get; init; } = "";
     }
 }

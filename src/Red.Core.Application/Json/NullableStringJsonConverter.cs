@@ -12,7 +12,7 @@ namespace Red.Core.Application.Json
             {
                 return reader.GetString();
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }

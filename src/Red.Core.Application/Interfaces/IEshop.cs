@@ -9,5 +9,6 @@ namespace Red.Core.Application.Interfaces
         Task<IReadOnlyCollection<SwitchGame>> SearchGames(EshopGameQuery query);
         Task<SwitchGamePrice> GetPrice(EshopPriceQuery query);
         Task<IReadOnlyCollection<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query);
+        Task<int> GetTotalGames();
     }
 }

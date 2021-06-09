@@ -20,8 +20,8 @@ namespace Red.Infrastructure.Persistence.Configurations
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
 
-            builder.HasKey(x => x.EntityId)
-                   .HasName("PK_SwitchGameEntityId");
+            builder.HasKey(x => new {x.ProductCode, x.Region})
+                   .HasName("PK_SwitchGame_ProductCodeRegion");
 
             builder.HasIndex(x => x.Slug)
                    .HasDatabaseName("IX_SwitchGameSlug")
@@ -62,6 +62,14 @@ namespace Red.Infrastructure.Persistence.Configurations
                        x => JsonSerializer.Serialize(x, serializerOptions),
                        x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
             builder.Property(x => x.PlayModes)
+                   .Metadata
+                   .SetValueComparer(BuildValueComparer<string>());
+
+            builder.Property(x => x.Nsuids)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
+            builder.Property(x => x.Nsuids)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
 

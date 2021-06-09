@@ -11,16 +11,15 @@ namespace Red.Infrastructure.Persistence.Migrations
                 name: "Games",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ProductCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Region = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PriceHistory = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RegularPrice = table.Column<float>(type: "real", nullable: true),
                     AllTimeLow = table.Column<float>(type: "real", nullable: true),
                     AllTimeHigh = table.Column<float>(type: "real", nullable: true),
-                    PriceHistory = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nsuid = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Nsuids = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Publisher = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Developer = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -43,7 +42,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SwitchGameId", x => x.Id);
+                    table.PrimaryKey("PK_SwitchGame_ProductCodeRegion", x => new { x.ProductCode, x.Region });
                 });
 
             migrationBuilder.CreateIndex(

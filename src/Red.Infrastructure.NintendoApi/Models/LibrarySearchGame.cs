@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -16,7 +17,8 @@ namespace Red.Infrastructure.NintendoApi.Models
     {
         [JsonExtensionData]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public Dictionary<string, object> _extensionData { get; init; } = new();
+        public ReadOnlyDictionary<string, object> _extensionData { get; init; }
+            = new(new Dictionary<string, object>());
 
         /// <summary>
         ///     Internal eShop version
@@ -89,9 +91,11 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonConverter(typeof(NullableLongJsonConverter))]
         public long? FsId { get; init; }
 
+        // todo: use proper convert (same issue as languages)
         [JsonPropertyName("game_category")]
         public List<string>? GameCategories { get; init; }
 
+        // todo: use proper convert (same issue as languages)
         [JsonPropertyName("game_categories_txt")]
         public List<string>? GameCategoriesTXT { get; init; }
 
@@ -168,10 +172,6 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonPropertyName("nintendo_switch_online_exclusive_b")]
         public bool? NintendoSwitchOnlineExclusive { get; init; }
 
-        [JsonPropertyName("nsuid_txt")]
-        [JsonConverter(typeof(NsuidListJsonConverter))]
-        public string? Nsuid { get; init; }
-
         [JsonPropertyName("originally_for_t")]
         public string? OriginallyFor { get; init; }
 
@@ -209,16 +209,33 @@ namespace Red.Infrastructure.NintendoApi.Models
         public float? PriceSorting { get; init; }
 
         [JsonPropertyName("priority")]
-        public string? Priority { get; init; }
+        public DateTime? Priority { get; init; }
+
+        //[JsonPropertyName("product_code_ss")]
+        //[JsonConverter(typeof(FirstItemJsonConverter))]
+        //[SuppressMessage("ReSharper", "InconsistentNaming")]
+        //public string? ProductCodeSS { get; init; }
+
+        //[JsonPropertyName("product_code_txt")]
+        //[JsonConverter(typeof(FirstItemJsonConverter))]
+        //public string? ProductCodeTXT { get; init; }
+
+        //[JsonPropertyName("nsuid_txt")]
+        //[JsonConverter(typeof(NsuidListJsonConverter))]
+        public string? Nsuid { get; init; } = "fakefakefake";
+
+        [JsonPropertyName("nsuid_txt")]
+        public List<string>? Nsuids { get; init; }
 
         [JsonPropertyName("product_code_ss")]
-        [JsonConverter(typeof(FirstItemJsonConverter))]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public string? ProductCodeSS { get; init; }
+        public List<string>? ProductCodeSS { get; init; }
 
         [JsonPropertyName("product_code_txt")]
-        [JsonConverter(typeof(FirstItemJsonConverter))]
-        public string? ProductCodeTXT { get; init; }
+        public List<string>? ProductCodeTXT { get; init; }
+
+
+
 
         [JsonPropertyName("publisher")]
         public string? Publisher { get; init; }
@@ -249,7 +266,7 @@ namespace Red.Infrastructure.NintendoApi.Models
         public List<string>? SystemNames { get; init; }
 
         [JsonPropertyName("system_type")]
-        [JsonConverter(typeof(FirstItemJsonConverter))]
+        [JsonConverter(typeof(FirstItemJsonConverter))] // todo: wrong converter bro.. should use same as languages i believe
         public string? SystemType { get; init; }
 
         [JsonPropertyName("play_mode_tabletop_mode_b")]
