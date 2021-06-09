@@ -7,7 +7,6 @@ namespace Red.Core.Application.Interfaces
     public interface IEshop
     {
         Task<IReadOnlyCollection<SwitchGame>> SearchGames(EshopGameQuery query);
-        Task<SwitchGamePrice> GetPrice(EshopPriceQuery query);
         Task<IReadOnlyCollection<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query);
         Task<int> GetTotalGames();
     }

@@ -211,27 +211,14 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonPropertyName("priority")]
         public DateTime? Priority { get; init; }
 
-        //[JsonPropertyName("product_code_ss")]
-        //[JsonConverter(typeof(FirstItemJsonConverter))]
-        //[SuppressMessage("ReSharper", "InconsistentNaming")]
-        //public string? ProductCodeSS { get; init; }
-
-        //[JsonPropertyName("product_code_txt")]
-        //[JsonConverter(typeof(FirstItemJsonConverter))]
-        //public string? ProductCodeTXT { get; init; }
-
         [JsonPropertyName("nsuid_txt")]
         public List<string>? Nsuids { get; init; }
 
         [JsonPropertyName("product_code_ss")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public List<string>? ProductCodeSS { get; init; }
 
         [JsonPropertyName("product_code_txt")]
         public List<string>? ProductCodeTXT { get; init; }
-
-
-
 
         [JsonPropertyName("publisher")]
         public string? Publisher { get; init; }

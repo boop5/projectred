@@ -37,7 +37,7 @@ namespace Red.Infrastructure.Spider.Worker
             var taskCount = (int) Math.Ceiling(1f * end / increment);
             var tasks = new List<Task>(taskCount);
 
-            for (var i = start; i <= end; i += increment)
+            for (var i = start; i < end; i += increment)
             {
                 var task = ProcessQuery(new EshopGameQuery {Index = i, Offset = increment});
                 tasks.Add(task);
@@ -48,30 +48,37 @@ namespace Red.Infrastructure.Spider.Worker
 
         private async Task ProcessQuery(EshopGameQuery query)
         {
-            var games = await _eshop.SearchGames(query);
-            Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] process {games.Count} games");
-
-            var repo = (ISwitchGameRepository) _sp.GetRequiredService(typeof(ISwitchGameRepository));
-
-            foreach (var game in games)
+            try
             {
-                // todo: add region in request
-                var dbEntity = await repo.GetByProductCode(game.ProductCode);
-                var existsInDb = dbEntity != null;
+                var games = await _eshop.SearchGames(query);
+                Log.LogInformation($"[{Thread.CurrentThread.ManagedThreadId}] process {games.Count} games");
 
-                // todo: handle different games with same title (currently crashes because of the same slug - fails at sql index)
+                var repo = (ISwitchGameRepository) _sp.GetRequiredService(typeof(ISwitchGameRepository));
 
-                if (existsInDb)
+                foreach (var game in games)
                 {
-                    if (!Equals(dbEntity, game))
+                    // todo: add region in request
+                    var dbEntity = await repo.GetByProductCode(game.ProductCode);
+                    var existsInDb = dbEntity != null;
+
+                    // todo: handle slug issue (minefield ...)
+
+                    if (existsInDb)
                     {
-                        await repo.UpdateAsync(game);
+                        if (!Equals(dbEntity, game))
+                        {
+                            await repo.UpdateAsync(game);
+                        }
+                    }
+                    else
+                    {
+                        await repo.AddAsync(game);
                     }
                 }
-                else
-                {
-                    await repo.AddAsync(game);
-                }
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to process query");
             }
 
             Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] finished");

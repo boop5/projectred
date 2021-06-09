@@ -18,6 +18,7 @@ namespace Red.Infrastructure.Persistence
         protected Repository(IDbContextFactory<LibraryContext> contextFactory)
         {
             Context = contextFactory.CreateDbContext();
+            Context.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public virtual IQueryable<TEntity> Get()

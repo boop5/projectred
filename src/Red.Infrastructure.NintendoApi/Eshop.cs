@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
@@ -23,36 +24,37 @@ namespace Red.Infrastructure.NintendoApi
     public class Eshop : IEshop
     {
         private readonly ISlugBuilder _slugBuilder;
+        private ILogger<Eshop> Log { get; }
 
-        public Eshop(IEshopSlugBuilder slugBuilder)
+        public Eshop(ILogger<Eshop> log, IEshopSlugBuilder slugBuilder)
         {
+            Log = log;
             _slugBuilder = slugBuilder;
-        }
-
-        public async Task<SwitchGamePrice> GetPrice(EshopPriceQuery query)
-        {
-            var prices = await GetPrices(new EshopMultiPriceQuery(query.Nsuid));
-
-            return prices.Single();
         }
 
         public async Task<IReadOnlyCollection<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query)
         {
-            var q = string.Join(null, query.Nsuids.Take(50).Select(x => $"&ids={x}"));
-            var country = "DE";
-            var language = "en";
-            var url = $"https://api.ec.nintendo.com/v1/price?country={country}&lang={language}&limit=50{q}";
-            var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var body = await response.Content.ReadAsStringAsync();
-                var deserialized = JsonSerializer.Deserialize<PriceSearchResult>(body);
+                var q = string.Join(null, query.Nsuids.Take(50).Select(x => $"&ids={x}"));
+                var country = "DE";
+                var language = "en";
+                var url = $"https://api.ec.nintendo.com/v1/price?country={country}&lang={language}&limit=50{q}";
+                var response = await Get(url);
 
-                if (deserialized != null)
+                if (response != null)
                 {
-                    return deserialized.Prices.Select(ConvertToSwitchGamePrice).ToList();
+                    var deserialized = JsonSerializer.Deserialize<PriceSearchResult>(response);
+
+                    if (deserialized != null)
+                    {
+                        return deserialized.Prices.Select(ConvertToSwitchGamePrice).ToList();
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to get prices");
             }
 
             return new List<SwitchGamePrice>();
@@ -94,7 +96,15 @@ namespace Red.Infrastructure.NintendoApi
                 return null;
             }
 
-            return _slugBuilder.Build(game.Title);
+            try
+            {
+                return _slugBuilder.Build(game.Title);
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to build slug for {game}", game);
+                return null;
+            }
         }
 
         private SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
@@ -121,7 +131,7 @@ namespace Red.Infrastructure.NintendoApi
                 Slug = BuildSlug(game),
                 // todo: Insert actual region
                 Region = "EU",
-                ProductCode = game.ProductCodeSS![0]
+                ProductCode = game.ProductCodeSS![0].Trim()
                 // todo: add missing fields
             };
         }
@@ -155,6 +165,26 @@ namespace Red.Infrastructure.NintendoApi
             };
         }
 
+        private async Task<string?> Get(string url)
+        {
+            try
+            {
+                var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    return body;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed HTTP request {url}", url);
+            }
+
+            return null;
+        }
+
         private static HttpClient GetHttpClient()
         {
             var hch = new HttpClientHandler {Proxy = null, UseProxy = false};
@@ -166,32 +196,39 @@ namespace Red.Infrastructure.NintendoApi
 
         private async Task<LibrarySearchResult?> GetLibrary(EshopGameQuery query)
         {
-            var locale = "en";
-            var regionUrl = Constants.NintendoEUUrl;
-
-            var baseUrl = $"{regionUrl}/{locale}/select";
-            var filter = $"q={query.Term}" +
-                         $"&start={query.Index}" +
-                         $"&rows={query.Offset}" +
-                         "&sort=dates_released_dts asc" +
-                         // "&sort=sorting_title asc" +
-                         "&wt=json " +
-                         "&bq=!deprioritise_b:true^999 " +
-                         "&fq=type:GAME " +
-                         "AND ((playable_on_txt: \"HAC\")) " +
-                         "AND system_type:nintendoswitch* " +
-                         "AND product_code_txt:* " +
-                         "AND sorting_title:* " +
-                         "AND *:*";
-            var url = $"{baseUrl}?{filter}";
-            var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var body = await response.Content.ReadAsStringAsync();
-                var deserialized = JsonSerializer.Deserialize<LibrarySearchResult>(body);
+                var locale = "en";
+                var regionUrl = Constants.NintendoEUUrl;
 
-                return deserialized;
+                var baseUrl = $"{regionUrl}/{locale}/select";
+                var filter = $"q={query.Term}" +
+                             $"&start={query.Index}" +
+                             $"&rows={query.Offset}" +
+                             "&sort=dates_released_dts asc" +
+                             // "&sort=sorting_title asc" +
+                             "&wt=json " +
+                             "&bq=!deprioritise_b:true^999 " +
+                             "&fq=type:GAME " +
+                             "AND ((playable_on_txt: \"HAC\")) " +
+                             "AND system_type:nintendoswitch* " +
+                             "AND product_code_txt:* " +
+                             "AND sorting_title:* " +
+                             "AND *:*";
+                var url = $"{baseUrl}?{filter}";
+                var response = await GetHttpClient().GetAsync(url).ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    var deserialized = JsonSerializer.Deserialize<LibrarySearchResult>(body);
+
+                    return deserialized;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to get library");
             }
 
             return null;
