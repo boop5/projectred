@@ -8,10 +8,11 @@ using Red.Core.Application.Interfaces;
 namespace Red.Infrastructure.Persistence
 {
     /// <summary>
-    /// https://github.com/WolfgangOfner/.NetCoreRepositoryAndUnitOfWorkPattern/t
+    ///     https://github.com/WolfgangOfner/.NetCoreRepositoryAndUnitOfWorkPattern/t
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    internal abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : class, new()
+    internal abstract class Repository<TEntity> : IRepository<TEntity>
+        where TEntity : class, new()
     {
         protected LibraryContext Context { get; }
 
@@ -21,16 +22,14 @@ namespace Red.Infrastructure.Persistence
             Context.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
-        public virtual IQueryable<TEntity> Get()
+        public ValueTask DisposeAsync()
         {
-            try
-            {
-                return Context.Set<TEntity>();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve entities: {ex.Message}");
-            }
+            return Context.DisposeAsync();
+        }
+
+        public void Dispose()
+        {
+            Context.Dispose();
         }
 
         public virtual async Task<TEntity> AddAsync(TEntity entity)
@@ -70,6 +69,18 @@ namespace Red.Infrastructure.Persistence
             catch (Exception ex)
             {
                 throw new Exception($"{nameof(entities)} could not be saved: {ex.Message}");
+            }
+        }
+
+        public virtual IQueryable<TEntity> Get()
+        {
+            try
+            {
+                return Context.Set<TEntity>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve entities: {ex.Message}");
             }
         }
 

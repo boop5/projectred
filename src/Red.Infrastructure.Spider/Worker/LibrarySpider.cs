@@ -51,9 +51,9 @@ namespace Red.Infrastructure.Spider.Worker
             try
             {
                 var games = await _eshop.SearchGames(query);
-                Log.LogInformation($"[{Thread.CurrentThread.ManagedThreadId}] process {games.Count} games");
+                Log.LogInformation("Process {count} games", games.Count);
 
-                var repo = (ISwitchGameRepository) _sp.GetRequiredService(typeof(ISwitchGameRepository));
+                await using var repo = (ISwitchGameRepository) _sp.GetRequiredService(typeof(ISwitchGameRepository));
 
                 foreach (var game in games)
                 {
@@ -78,10 +78,10 @@ namespace Red.Infrastructure.Spider.Worker
             }
             catch (Exception e)
             {
-                Log.LogWarning(e, "Failed to process query");
+                Log.LogWarning(e, "Failed to process query {query}", query);
             }
 
-            Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] finished");
+            Log.LogInformation($"Finished processing");
         }
     }
 }

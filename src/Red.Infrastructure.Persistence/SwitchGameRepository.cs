@@ -15,8 +15,8 @@ namespace Red.Infrastructure.Persistence
         public Task<SwitchGame> GetByProductCode(string productCode)
         {
             return Context.Games
-                          .AsNoTracking().
-                           SingleOrDefaultAsync(x => x.ProductCode == productCode);
+                          .AsNoTracking()
+                          .SingleOrDefaultAsync(x => x.ProductCode == productCode);
         }
     }
 }
