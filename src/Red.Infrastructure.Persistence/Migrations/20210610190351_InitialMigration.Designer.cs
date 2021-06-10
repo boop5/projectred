@@ -10,7 +10,7 @@ using Red.Infrastructure.Persistence;
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20210610180214_InitialMigration")]
+    [Migration("20210610190351_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,13 +32,8 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<int?>("AgeRating")
                         .HasColumnType("int");
 
-                    b.Property<float?>("AllTimeHigh")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AllTimeLow")
-                        .HasColumnType("real");
-
                     b.Property<string>("Categories")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("Coop")
@@ -57,6 +52,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Languages")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("MaxPlayers")
@@ -66,6 +62,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Nsuids")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Pictures")
@@ -73,19 +70,18 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlayModes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Popularity")
                         .HasColumnType("int");
 
-                    b.Property<string>("PriceHistory")
+                    b.Property<string>("Price")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Publisher")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<float?>("RegularPrice")
-                        .HasColumnType("real");
 
                     b.Property<DateTime?>("ReleaseDate")
                         .HasColumnType("datetime2");

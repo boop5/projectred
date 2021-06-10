@@ -38,7 +38,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Categories)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
+                       x => JsonSerializer.Deserialize<IReadOnlyCollection<string>?>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Categories)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
@@ -51,7 +51,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Languages)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
+                       x => JsonSerializer.Deserialize<IReadOnlyCollection<string>?>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Languages)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
@@ -59,29 +59,23 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.PlayModes)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
-            builder.Property(x => x.PlayModes)
-                   .Metadata
-                   .SetValueComparer(BuildValueComparer<string>());
+                       x => JsonSerializer.Deserialize<SwitchGamePlayModes>(x, serializerOptions)!);
 
             builder.Property(x => x.Nsuids)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
+                       x => JsonSerializer.Deserialize<IReadOnlyCollection<string>?>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Nsuids)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
 
-            builder.Property(x => x.PriceHistory)
+            builder.Property(x => x.Price)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<PriceRecord>?>(x, serializerOptions));
-            builder.Property(x => x.PriceHistory)
-                   .Metadata
-                   .SetValueComparer(BuildValueComparer<PriceRecord>());
+                       x => JsonSerializer.Deserialize<SwitchGamePriceDetails>(x, serializerOptions)!);
         }
 
-        private static ValueComparer<List<T>?> BuildValueComparer<T>()
+        private static ValueComparer<IReadOnlyCollection<T>?> BuildValueComparer<T>()
         {
             return new(
                 (x,y) => x != null && y != null && x.SequenceEqual(y),

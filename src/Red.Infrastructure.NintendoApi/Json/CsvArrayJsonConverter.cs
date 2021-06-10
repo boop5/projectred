@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Red.Infrastructure.NintendoApi.Json
 {
-    internal sealed class LanguagesJsonConverter : JsonConverter<List<string>?>
+    internal sealed class CsvArrayJsonConverter : JsonConverter<List<string>?>
     {
         public override List<string>? Read(
             ref Utf8JsonReader reader,

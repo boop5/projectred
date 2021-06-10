@@ -42,16 +42,22 @@ namespace Red.Infrastructure.NintendoApi
         {
             return new()
             {
-                Nsuids = game.Nsuids,
+                Nsuids = game.Nsuids ?? new List<string>(),
+                Languages = game.Languages ?? new List<string>(),
+                Categories = game.GameCategoriesPretty ?? new List<string>(),
+                PlayModes = new SwitchGamePlayModes()
+                {
+                    Handheld = game.HandheldMode == true,
+                    Tabletop = game.TabletopMode == true,
+                    Tv = game.TvMode == true
+                },
                 AgeRating = game.AgeRating,
-                Categories = game.GameCategories,
                 Coop = game.CoopPlay,
                 DemoAvailable = game.DemoAvailable,
                 Developer = game.Developer,
                 Publisher = game.Publisher,
                 VoucherPossible = game.SwitchGameVoucher,
                 Description = game.Excerpt,
-                Languages = game.Languages,
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
                 Popularity = game.Popularity ?? 0,

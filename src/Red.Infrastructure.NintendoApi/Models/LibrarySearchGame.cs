@@ -91,12 +91,16 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonConverter(typeof(NullableLongJsonConverter))]
         public long? FsId { get; init; }
 
-        // todo: use proper convert (same issue as languages)
         [JsonPropertyName("game_category")]
+        [JsonConverter(typeof(CsvArrayJsonConverter))]
         public List<string>? GameCategories { get; init; }
 
-        // todo: use proper convert (same issue as languages)
+        [JsonPropertyName("pretty_game_categories_txt")]
+        [JsonConverter(typeof(CsvArrayJsonConverter))]
+        public List<string>? GameCategoriesPretty { get; init; }
+
         [JsonPropertyName("game_categories_txt")]
+        [JsonConverter(typeof(CsvArrayJsonConverter))]
         public List<string>? GameCategoriesTXT { get; init; }
 
         /// <summary>
@@ -142,7 +146,7 @@ namespace Red.Infrastructure.NintendoApi.Models
         public bool? Labo { get; init; }
 
         [JsonPropertyName("language_availability")]
-        [JsonConverter(typeof(LanguagesJsonConverter))]
+        [JsonConverter(typeof(CsvArrayJsonConverter))]
         public List<string>? Languages { get; init; }
 
         [JsonPropertyName("local_play")]
@@ -172,6 +176,9 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonPropertyName("nintendo_switch_online_exclusive_b")]
         public bool? NintendoSwitchOnlineExclusive { get; init; }
 
+        [JsonPropertyName("nsuid_txt")]
+        public List<string>? Nsuids { get; init; }
+
         [JsonPropertyName("originally_for_t")]
         public string? OriginallyFor { get; init; }
 
@@ -199,9 +206,6 @@ namespace Red.Infrastructure.NintendoApi.Models
         [JsonPropertyName("pretty_date_s")]
         public string? PrettyDate { get; init; }
 
-        [JsonPropertyName("pretty_game_categories_txt")]
-        public List<string>? PrettyGameCategories { get; init; }
-
         [JsonPropertyName("price_discounted_f")]
         public float? PriceDiscounted { get; init; }
 
@@ -210,9 +214,6 @@ namespace Red.Infrastructure.NintendoApi.Models
 
         [JsonPropertyName("priority")]
         public DateTime? Priority { get; init; }
-
-        [JsonPropertyName("nsuid_txt")]
-        public List<string>? Nsuids { get; init; }
 
         [JsonPropertyName("product_code_ss")]
         public List<string>? ProductCodeSS { get; init; }
