@@ -84,7 +84,7 @@ namespace Red.Infrastructure.Spider.Worker
             public string EshopUrl { get; set; } = "";
             public string ProductCode { get; set; } = "";
             public string Region { get; set; } = "";
-            public SwitchGamePictures Pictures { get; set; } = new();
+            public SwitchGameMedia Pictures { get; set; } = new();
         }
 
         private readonly IServiceProvider _serviceProvider;
@@ -107,7 +107,7 @@ namespace Red.Infrastructure.Spider.Worker
                                      .Select(x => new ScreenshotDto
                                      {
                                          EshopUrl = x.EshopUrl!,
-                                         Pictures = x.Pictures,
+                                         Pictures = x.Media,
                                          ProductCode = x.ProductCode,
                                          Region = x.Region
                                      }).ToListAsync(stoppingToken);

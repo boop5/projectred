@@ -13,7 +13,7 @@ namespace Red.Core.Domain.Models
         public List<string> Languages { get; init; } = new List<string>();
         public List<string> Nsuids { get; init; } = new List<string>();
 
-        public SwitchGamePictures Pictures { get; init; } = new();
+        public SwitchGameMedia Media { get; init; } = new();
         public SwitchGamePlayModes PlayModes { get; init; } = new();
         public SwitchGamePriceDetails Price { get; init; } = new();
 
@@ -73,7 +73,7 @@ namespace Red.Core.Domain.Models
                    && VoucherPossible == other.VoucherPossible
                    && Popularity == other.Popularity
                    && Nullable.Equals(ReleaseDate, other.ReleaseDate)
-                   && Pictures.Equals(other.Pictures)
+                   && Media.Equals(other.Media)
                    && Price.Equals(other.Price)
                    && Categories.SequenceEqual(other.Categories)
                    && Languages.SequenceEqual(other.Languages)
@@ -106,7 +106,7 @@ namespace Red.Core.Domain.Models
             hashCode.Add(SupportsCloudSave);
             hashCode.Add(RemovedFromEshop);
             hashCode.Add(VoucherPossible);
-            hashCode.Add(Pictures);
+            hashCode.Add(Media);
             hashCode.Add(Popularity);
 
             return hashCode.ToHashCode();

@@ -43,10 +43,10 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
 
-            builder.Property(x => x.Pictures)
+            builder.Property(x => x.Media)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<SwitchGamePictures>(x, serializerOptions) ?? new());
+                       x => JsonSerializer.Deserialize<SwitchGameMedia>(x, serializerOptions) ?? new());
    
             builder.Property(x => x.Languages)
                    .HasConversion(

@@ -71,9 +71,9 @@ namespace Red.Infrastructure.NintendoApi
                 Region = "EU",
                 ProductCode = game.ProductCodeSS![0].Trim(),
                 // todo: add missing fields
-                Pictures = new SwitchGamePictures
+                Media = new SwitchGameMedia
                 {
-                    Cover = game.image_url_sq_s
+                    Cover = new ImageDetail { Url = game.image_url_sq_s ?? "" }
                 },
             };
         }

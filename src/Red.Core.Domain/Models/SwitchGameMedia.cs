@@ -4,15 +4,16 @@ using System.Linq;
 
 namespace Red.Core.Domain.Models
 {
-    public sealed record SwitchGamePictures
+    public sealed record SwitchGameMedia
     {
         /// <summary>uri to image.</summary>
-        public string? Cover { get; init; }
+        public ImageDetail? Cover { get; init; }
 
         /// <summary>List of uris.</summary>
-        public IReadOnlyCollection<string> Screenshots { get; init; } = new List<string>();
+        public IReadOnlyCollection<ImageDetail> Screenshots { get; init; } = new List<ImageDetail>();
+        public IReadOnlyCollection<VideoDetail> Videos { get; init; } = new List<VideoDetail>();
 
-        public bool Equals(SwitchGamePictures? other)
+        public bool Equals(SwitchGameMedia? other)
         {
             if (ReferenceEquals(null, other))
             {
