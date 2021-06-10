@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Red.Core.Application.Extensions;
@@ -69,11 +67,11 @@ namespace Red.Infrastructure.NintendoApi
             if (searchResult != null)
             {
                 return searchResult.Response.Games
-                              .Where(x => x.ProductCodeSS?.Count == 1)
-                              // some games have duplicate entries in the result, so lets remove them
-                              .DistinctBy(x => x.ProductCodeSS![0])
-                              .Select(_converter.ConvertToSwitchGame)
-                              .ToList();
+                                   .Where(x => x.ProductCodeSS?.Count == 1)
+                                   // some games have duplicate entries in the result, so lets remove them
+                                   .DistinctBy(x => x.ProductCodeSS![0])
+                                   .Select(_converter.ConvertToSwitchGame)
+                                   .ToList();
             }
 
             return new List<SwitchGame>();

@@ -51,6 +51,7 @@ namespace Red.Infrastructure.NintendoApi
                     Tabletop = game.TabletopMode == true,
                     Tv = game.TvMode == true
                 },
+                EshopUrl = game.Url,
                 AgeRating = game.AgeRating,
                 Coop = game.CoopPlay,
                 DemoAvailable = game.DemoAvailable,

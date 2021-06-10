@@ -49,6 +49,9 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<int?>("DownloadSize")
                         .HasColumnType("int");
 
+                    b.Property<string>("EshopUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Languages")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

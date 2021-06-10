@@ -6,25 +6,25 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
-        public IReadOnlyCollection<string> Categories { get; init; } = new List<string>();
-        public IReadOnlyCollection<string> Languages { get; init; } = new List<string>();
-        public IReadOnlyCollection<string> Nsuids { get; init; } = new List<string>();
+        public string ProductCode { get; init; } = "";
+        public string Region { get; init; } = "";
+
+        public List<string> Categories { get; init; } = new List<string>();
+        public List<string> Languages { get; init; } = new List<string>();
+        public List<string> Nsuids { get; init; } = new List<string>();
 
         public SwitchGamePictures Pictures { get; init; } = new();
         public SwitchGamePlayModes PlayModes { get; init; } = new();
+        public SwitchGamePriceDetails Price { get; init; } = new();
 
         /// <summary>Meant to use to sort search results.</summary>
         /// <remarks>Higher numbers mean less popularity.</remarks>
         public int Popularity { get; init; } = int.MaxValue;
 
-        public SwitchGamePriceDetails Price { get; init; } = new();
-
-        public string ProductCode { get; init; } = "";
-        public string Region { get; init; } = "";
-
         #region Optional
 
         public string? Title { get; init; }
+        public string? EshopUrl { get; init; }
         public string? Slug { get; init; }
         public string? Description { get; init; }
         public string? Publisher { get; init; }
@@ -58,6 +58,7 @@ namespace Red.Core.Domain.Models
 
             return Title == other.Title
                    && Slug == other.Slug
+                   && EshopUrl == other.EshopUrl
                    && Description == other.Description
                    && Publisher == other.Publisher
                    && Developer == other.Developer
@@ -88,6 +89,7 @@ namespace Red.Core.Domain.Models
             hashCode.Add(Nsuids);
             hashCode.Add(Title);
             hashCode.Add(Slug);
+            hashCode.Add(EshopUrl);
             hashCode.Add(Description);
             hashCode.Add(Publisher);
             hashCode.Add(Developer);

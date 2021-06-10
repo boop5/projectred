@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +27,11 @@ namespace Red.Infrastructure.Spider.Worker
         protected override TimeSpan GetTaskInterval()
         {
             return TimeSpan.FromMinutes(5);
+        }
+
+        protected override TimeSpan GetInitialDelay()
+        {
+            return TimeSpan.FromMinutes(50);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

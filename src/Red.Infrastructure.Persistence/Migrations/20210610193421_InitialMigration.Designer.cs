@@ -10,7 +10,7 @@ using Red.Infrastructure.Persistence;
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20210610190351_InitialMigration")]
+    [Migration("20210610193421_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,9 @@ namespace Red.Infrastructure.Persistence.Migrations
 
                     b.Property<int?>("DownloadSize")
                         .HasColumnType("int");
+
+                    b.Property<string>("EshopUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Languages")
                         .IsRequired()

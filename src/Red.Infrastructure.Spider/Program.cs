@@ -18,6 +18,7 @@ Host.CreateDefaultBuilder(args)
 
             services.AddHostedService<PriceSpider>();
             services.AddHostedService<LibrarySpider>();
+            services.AddHostedService<ScreenshotSpider>();
         })
     .Build()
     .Run();
