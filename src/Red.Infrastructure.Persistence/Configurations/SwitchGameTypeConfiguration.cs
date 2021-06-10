@@ -43,14 +43,11 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
 
-            builder.Property(x => x.Screenshots)
+            builder.Property(x => x.Pictures)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions));
-            builder.Property(x => x.Screenshots)
-                   .Metadata
-                   .SetValueComparer(BuildValueComparer<string>());
-
+                       x => JsonSerializer.Deserialize<SwitchGamePictures>(x, serializerOptions) ?? new());
+   
             builder.Property(x => x.Languages)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),

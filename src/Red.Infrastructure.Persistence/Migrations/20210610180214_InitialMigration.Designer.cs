@@ -10,7 +10,7 @@ using Red.Infrastructure.Persistence;
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20210609210230_InitialMigration")]
+    [Migration("20210610180214_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,9 +44,6 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<bool?>("Coop")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Cover")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool?>("DemoAvailable")
                         .HasColumnType("bit");
 
@@ -71,6 +68,10 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nsuids")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Pictures")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PlayModes")
                         .HasColumnType("nvarchar(max)");
 
@@ -91,9 +92,6 @@ namespace Red.Infrastructure.Persistence.Migrations
 
                     b.Property<bool?>("RemovedFromEshop")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Screenshots")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Slug")
                         .HasColumnType("nvarchar(450)");

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,7 +64,6 @@ namespace Red.Infrastructure.Spider.Worker
                     var existsInDb = dbEntity != null;
 
                     // todo: handle slug issue (minefield ...)
-
                     if (existsInDb)
                     {
                         if (!Equals(dbEntity, game))
@@ -81,7 +82,7 @@ namespace Red.Infrastructure.Spider.Worker
                 Log.LogWarning(e, "Failed to process query {query}", query);
             }
 
-            Log.LogInformation($"Finished processing");
+            Log.LogInformation("Finished processing");
         }
     }
 }

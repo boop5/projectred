@@ -6,21 +6,28 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
-        #region Required
-        
+        #region Required / Has default value
+
         public string ProductCode { get; init; } = "";
         public string Region { get; init; } = "";
+        public SwitchGamePictures Pictures { get; init; } = new();
+
+        /// <summary>Meant to use to sort search results.</summary>
+        /// <remarks>Higher numbers mean less popularity.</remarks>
+        public int Popularity { get; init; } = int.MaxValue;
 
         #endregion
 
         #region Pricing (might move to its own table?)
+
         public List<PriceRecord>? PriceHistory { get; init; }
         public float? RegularPrice { get; init; }
         public float? AllTimeLow { get; init; }
         public float? AllTimeHigh { get; init; }
+
         #endregion
 
-        #region Other
+        #region Optional
 
         public string? Slug { get; init; }
         public List<string>? Nsuids { get; init; }
@@ -42,21 +49,10 @@ namespace Red.Core.Domain.Models
         public bool? RemovedFromEshop { get; init; }
         public bool? VoucherPossible { get; init; }
 
-        /// <summary>List of uris.</summary>
-        public List<string>? Screenshots { get; init; }
-
-        /// <summary>uri to image.</summary>
-        public string? Cover { get; init; }
-
-        /// <summary>Meant to use to sort search results.</summary>
-        /// <remarks>Higher numbers mean less popularity.</remarks>
-        public int Popularity { get; init; } = int.MaxValue;
-
         #endregion
 
         #region Equality
 
-        
         public bool Equals(SwitchGame? other)
         {
             if (ReferenceEquals(null, other))
@@ -87,14 +83,13 @@ namespace Red.Core.Domain.Models
                    && SupportsCloudSave == other.SupportsCloudSave
                    && RemovedFromEshop == other.RemovedFromEshop
                    && VoucherPossible == other.VoucherPossible
-                   && Cover == other.Cover
+                   && Pictures.Equals(other.Pictures)
                    && Popularity == other.Popularity
                    && (PriceHistory ?? Enumerable.Empty<PriceRecord>()).SequenceEqual(other.PriceHistory ?? Enumerable.Empty<PriceRecord>())
                    && (Nsuids ?? Enumerable.Empty<string>()).SequenceEqual(other.Nsuids ?? Enumerable.Empty<string>())
                    && (Categories ?? Enumerable.Empty<string>()).SequenceEqual(other.Categories ?? Enumerable.Empty<string>())
                    && (Languages ?? Enumerable.Empty<string>()).SequenceEqual(other.Languages ?? Enumerable.Empty<string>())
-                   && (PlayModes ?? Enumerable.Empty<string>()).SequenceEqual(other.PlayModes ?? Enumerable.Empty<string>())
-                   && (Screenshots ?? Enumerable.Empty<string>()).SequenceEqual(other.Screenshots ?? Enumerable.Empty<string>());
+                   && (PlayModes ?? Enumerable.Empty<string>()).SequenceEqual(other.PlayModes ?? Enumerable.Empty<string>());
         }
 
         public override int GetHashCode()
@@ -124,8 +119,7 @@ namespace Red.Core.Domain.Models
             hashCode.Add(SupportsCloudSave);
             hashCode.Add(RemovedFromEshop);
             hashCode.Add(VoucherPossible);
-            hashCode.Add(Screenshots);
-            hashCode.Add(Cover);
+            hashCode.Add(Pictures);
             hashCode.Add(Popularity);
 
             return hashCode.ToHashCode();

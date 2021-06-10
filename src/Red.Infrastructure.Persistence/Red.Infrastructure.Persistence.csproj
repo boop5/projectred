@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Red.Core.Domain\Red.Core.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

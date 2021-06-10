@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -61,8 +62,12 @@ namespace Red.Infrastructure.NintendoApi
                 Slug = BuildSlug(game),
                 // todo: Insert actual region
                 Region = "EU",
-                ProductCode = game.ProductCodeSS![0].Trim()
+                ProductCode = game.ProductCodeSS![0].Trim(),
                 // todo: add missing fields
+                Pictures = new SwitchGamePictures
+                {
+                    Cover = game.image_url_sq_s
+                },
             };
         }
 

@@ -13,6 +13,8 @@ namespace Red.Infrastructure.Persistence.Migrations
                 {
                     ProductCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Region = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Pictures = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Popularity = table.Column<int>(type: "int", nullable: false),
                     PriceHistory = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RegularPrice = table.Column<float>(type: "real", nullable: true),
                     AllTimeLow = table.Column<float>(type: "real", nullable: true),
@@ -35,10 +37,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                     PlayModes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SupportsCloudSave = table.Column<bool>(type: "bit", nullable: true),
                     RemovedFromEshop = table.Column<bool>(type: "bit", nullable: true),
-                    VoucherPossible = table.Column<bool>(type: "bit", nullable: true),
-                    Screenshots = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Cover = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Popularity = table.Column<int>(type: "int", nullable: false)
+                    VoucherPossible = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
