@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Red.Core.Application;
-using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
@@ -30,63 +29,6 @@ namespace Red.Infrastructure.Spider.Worker
             : base(log)
         {
             _serviceProvider = serviceProvider;
-        }
-
-        private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)
-        {
-            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
-
-            foreach (var dto in chunk)
-            {
-                var start = DateTime.UtcNow;
-                Log.LogInformation(dto.ProductCode);
-
-                try
-                {
-                    var url = $"https://www.nintendo-europe.com/{dto.EshopUrl}#Gallery";
-                    var document = await GetDocument(url);
-                    var js = document.Context.GetService<JsScriptingService>();
-
-                    var galleries = GetGalleries(js, document);
-                    if (galleries == null)
-                    {
-                        continue;
-                    }
-
-                    var galleryItems = GetGalleryItems(document, js, galleries);
-                    var entity = await repo.GetByProductCode(dto.ProductCode);
-                    IReadOnlyCollection<ImageDetail> screenshots = entity.Media.Screenshots
-                                                                         .Union(GetImageDetails(GetImagesFromGalleryItems(galleryItems)))
-                                                                         .Distinct()
-                                                                         .ToList();
-                    IReadOnlyCollection<VideoDetail> videos = entity.Media.Videos
-                                                                    .Union(await LoadVideoDetails(GetVideosFromGalleryItems(galleryItems)))
-                                                                    .Distinct()
-                                                                    .ToList();
-                    var updatedEntity = entity with
-                    {
-                        Media = new SwitchGameMedia
-                        {
-                            Screenshots = screenshots,
-                            Videos = videos,
-                            Cover = entity.Media.Cover,
-                            LastUpdated = DateTime.UtcNow
-                        }
-                    };
-
-                    if (!entity.Media.Equals(updatedEntity.Media))
-                    {
-                        Log.LogInformation($"Update {entity.ProductCode}");
-                        await repo.UpdateAsync(updatedEntity);
-                    }
-
-                    Log.LogInformation($"Finished after {(DateTime.UtcNow - start).TotalSeconds}s");
-                }
-                catch (Exception e)
-                {
-                    Log.LogError("FAILED SCREENSHOT THING {msg}", e.Message);
-                }
-            }
         }
 
         private async Task<IDocument> GetDocument(string url)
@@ -136,8 +78,8 @@ namespace Red.Infrastructure.Spider.Worker
                         {
                             string GetValue(string k)
                             {
-                                return item.HasOwnProperty(k) 
-                                    ? item.GetOwnProperty(k).Value.AsString() 
+                                return item.HasOwnProperty(k)
+                                    ? item.GetOwnProperty(k).Value.AsString()
                                     : string.Empty;
                             }
 
@@ -153,7 +95,7 @@ namespace Red.Infrastructure.Spider.Worker
                                     image_url = GetValue("image_url"),
                                     title = GetValue("title"),
                                     descr = GetValue("descr"),
-                                    type = GetValue("type"),
+                                    type = GetValue("type")
                                 });
                         }
                     }
@@ -219,24 +161,25 @@ namespace Red.Infrastructure.Spider.Worker
             //var result = new List<VideoDetail>();
 
             var result2 = videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl))
-                  .Select(async x => await new HttpClient().GetAsync(x.PlaylistUrl))
-                  .Select(x => x.Result)
-                  .Where(x => x.IsSuccessStatusCode)
-                  .Select(async x => await x.Content.ReadAsStringAsync())
-                  .Select(x => x.Result)
-                  .Select(x =>  JsonSerializer.Deserialize<Playlist>(x))
-                  .Where(x => x != null)
-                  .SelectMany(x => x.mediaList)
-                  .Where(x => x.mobileUrls.Any(x => x.targetMediaPlatform == "MobileH264"))
-                  .Select(x => 
-                              new VideoDetail
-                              {
-                                  Title = x.title,
-                                  Url = x.mobileUrls.First(y => y.targetMediaPlatform == "MobileH264").mobileUrl,
-                                  Duration = x.durationInMilliseconds,
-                                  PreviewImage = x.previewImageUrl
-                              })
-                  .ToList();
+                                .Select(async x => await new HttpClient().GetAsync(x.PlaylistUrl))
+                                .Select(x => x.Result)
+                                .Where(x => x.IsSuccessStatusCode)
+                                .Select(async x => await x.Content.ReadAsStringAsync())
+                                .Select(x => x.Result)
+                                .Select(x => JsonSerializer.Deserialize<Playlist>(x))
+                                .Where(x => x != null)
+                                .SelectMany(x => x.mediaList)
+                                .Where(x => x.mobileUrls.Any(x => x.targetMediaPlatform == "MobileH264"))
+                                .Select(
+                                    x =>
+                                        new VideoDetail
+                                        {
+                                            Title = x.title,
+                                            Url = x.mobileUrls.First(y => y.targetMediaPlatform == "MobileH264").mobileUrl,
+                                            Duration = x.durationInMilliseconds,
+                                            PreviewImage = x.previewImageUrl
+                                        })
+                                .ToList();
 
             /*
             foreach (var video in videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl)))
@@ -281,32 +224,93 @@ namespace Red.Infrastructure.Spider.Worker
         {
             ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
             var gs = await repo.Get()
-                               .Select(x => new SwitchGame()
-                               {
-                                   ProductCode = x.ProductCode, 
-                                   Region=x.Region, 
-                                   Media = x.Media,
-                                   EshopUrl = x.EshopUrl
-                               })
+                               .Select(
+                                   x => new SwitchGame
+                                   {
+                                       ProductCode = x.ProductCode,
+                                       Region = x.Region,
+                                       Media = x.Media,
+                                       EshopUrl = x.EshopUrl
+                                   })
                                .ToListAsync();
             var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl))
-                                 .Where(x => x.Media.LastUpdated < DateTime.Today)
-                                 .OrderBy(x => x.ProductCode)
-                                 .Select(x => new ScreenshotDto
-                                     {
-                                         EshopUrl = x.EshopUrl!,
-                                         Pictures = x.Media,
-                                         ProductCode = x.ProductCode,
-                                         Region = x.Region
-                                     }).ToList();
+                         .Where(x => x.Media.LastUpdated < DateTime.Today)
+                         .OrderBy(x => x.ProductCode)
+                         .Select(
+                             x => new ScreenshotDto
+                             {
+                                 EshopUrl = x.EshopUrl!,
+                                 Pictures = x.Media,
+                                 ProductCode = x.ProductCode,
+                                 Region = x.Region
+                             })
+                         .ToList();
 
             // await Task.WhenAll(dtos.ChunkBy(500).Select(UpdateScreenshots).ToList());
             Log.LogWarning($"UPDATE {dtos.Count} games");
             await UpdateScreenshots(dtos);
         }
 
+        private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)
+        {
+            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+
+            foreach (var dto in chunk)
+            {
+                var start = DateTime.UtcNow;
+                Log.LogInformation(dto.ProductCode);
+
+                try
+                {
+                    var url = $"https://www.nintendo-europe.com/{dto.EshopUrl}#Gallery";
+                    var document = await GetDocument(url);
+                    var js = document.Context.GetService<JsScriptingService>();
+
+                    var galleries = GetGalleries(js, document);
+                    if (galleries == null)
+                    {
+                        continue;
+                    }
+
+                    var galleryItems = GetGalleryItems(document, js, galleries);
+                    var entity = await repo.GetByProductCode(dto.ProductCode);
+                    var screenshots = entity.Media.Screenshots
+                                                                         .Union(GetImageDetails(GetImagesFromGalleryItems(galleryItems)))
+                                                                         .Distinct()
+                                                                         .ToList();
+                    var videos = entity.Media.Videos
+                                                                    .Union(await LoadVideoDetails(GetVideosFromGalleryItems(galleryItems)))
+                                                                    .Distinct()
+                                                                    .ToList();
+                    var updatedEntity = entity with
+                    {
+                        Media = new SwitchGameMedia
+                        {
+                            Screenshots = screenshots,
+                            Videos = videos,
+                            Cover = entity.Media.Cover,
+                            LastUpdated = DateTime.UtcNow
+                        }
+                    };
+
+                    if (!entity.Media.Equals(updatedEntity.Media))
+                    {
+                        Log.LogInformation($"Update {entity.ProductCode}");
+                        await repo.UpdateAsync(updatedEntity);
+                    }
+
+                    Log.LogInformation($"Finished after {(DateTime.UtcNow - start).TotalSeconds}s");
+                }
+                catch (Exception e)
+                {
+                    Log.LogError("FAILED SCREENSHOT THING {msg}", e.Message);
+                }
+            }
+        }
+
 
         #region DTO
+
         // ReSharper disable InconsistentNaming
 
         private class Image
@@ -338,17 +342,17 @@ namespace Red.Infrastructure.Spider.Worker
             public int durationInMilliseconds { get; } = 0;
             public List<string> flags { get; init; } = new();
             public string mediaId { get; init; } = "";
-            public List<mobileUrlItem> mobileUrls { get; init; } = new();
+            public List<mobileUrlItem> mobileUrls { get; } = new();
             public int positionInChannel { get; init; } = 0;
-            public string previewImageUrl { get; init; } = "";
+            public string previewImageUrl { get; } = "";
             public string thumbnailImageUrl { get; init; } = "";
-            public string title { get; init;  } = "";
+            public string title { get; } = "";
         }
 
         private class mobileUrlItem
         {
-            public string mobileUrl { get;init;  } = "";
-            public string targetMediaPlatform { get; init; } = "";
+            public string mobileUrl { get; } = "";
+            public string targetMediaPlatform { get; } = "";
         }
 
         private class Playlist
@@ -368,14 +372,18 @@ namespace Red.Infrastructure.Spider.Worker
         private class Video
         {
             public string filename { get; init; } = "";
-            public string PlaylistUrl => $"https://production-ps.lvp.llnw.net/r/PlaylistService/media/{video_id}/getMobilePlaylistByMediaId";
+
+            public string PlaylistUrl =>
+                $"https://production-ps.lvp.llnw.net/r/PlaylistService/media/{video_id}/getMobilePlaylistByMediaId";
+
             public string video_content_url { get; init; } = "";
             public string video_embed_url { get; init; } = "";
             public string video_id { get; init; } = "";
             public string video_thumbnail_url { get; init; } = "";
         }
-        
+
         // ReSharper restore InconsistentNaming
+
         #endregion
     }
 }

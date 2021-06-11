@@ -12,8 +12,8 @@ namespace Red.Core.Domain.Models
         public ImageDetail? Cover { get; init; }
 
         /// <summary>List of uris.</summary>
-        public IReadOnlyCollection<ImageDetail> Screenshots { get; init; } = new List<ImageDetail>();
-        public IReadOnlyCollection<VideoDetail> Videos { get; init; } = new List<VideoDetail>();
+        public List<ImageDetail> Screenshots { get; init; } = new List<ImageDetail>();
+        public List<VideoDetail> Videos { get; init; } = new List<VideoDetail>();
 
         public bool Equals(SwitchGameMedia? other)
         {
@@ -29,12 +29,13 @@ namespace Red.Core.Domain.Models
 
             return Screenshots.SequenceEqual(other.Screenshots)
                    && Videos.SequenceEqual(other.Videos)
-                   && Cover == other.Cover;
+                   && Cover == other.Cover
+                   && Nullable.Equals(LastUpdated, other.LastUpdated);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Screenshots, Videos, Cover);
+            return HashCode.Combine(Screenshots, Videos, Cover, LastUpdated);
         }
     }
 }
