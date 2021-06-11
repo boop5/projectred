@@ -9,9 +9,9 @@ namespace Red.Core.Domain.Models
         public string ProductCode { get; init; } = "";
         public string Region { get; init; } = "";
 
-        public List<string> Categories { get; init; } = new List<string>();
-        public List<string> Languages { get; init; } = new List<string>();
-        public List<string> Nsuids { get; init; } = new List<string>();
+        public List<string> Categories { get; init; } = new(0);
+        public List<string> Languages { get; init; } = new(0);
+        public List<string> Nsuids { get; init; } = new(0);
 
         public SwitchGameMedia Media { get; init; } = new();
         public SwitchGamePlayModes PlayModes { get; init; } = new();

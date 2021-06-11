@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Red.Core.Application;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
@@ -45,9 +46,13 @@ namespace Red.Infrastructure.Spider.Worker
 
             var nsuids = games.Where(x => x.Nsuids.Count == 1).Select(x => x.Nsuids[0]);
 
-            var prices = await _eshop.GetPrices(new EshopMultiPriceQuery(nsuids));
+            foreach (var chunk in nsuids.ChunkBy(50))
+            {
+                var query = new EshopMultiPriceQuery(chunk);
+                var prices = await _eshop.GetPrices(query);
 
-            ;
+                ;
+            }
         }
     }
 }
