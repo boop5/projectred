@@ -20,16 +20,12 @@ using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider.Worker
 {
-    internal sealed class ScreenshotSpider : ScheduledWorker
+    internal sealed class GalleriesLoader
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public ScreenshotSpider(ILogger<ScreenshotSpider> log,
-                                IServiceProvider serviceProvider)
-            : base(log)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        private IDocument _document;
+        private ObjectInstance? _galleries;
+        private List<GalleryItem>? _galleryItems;
+        private JsScriptingService _js;
 
         private async Task<IDocument> GetDocument(string url)
         {
@@ -37,6 +33,11 @@ namespace Red.Infrastructure.Spider.Worker
             var context = BrowsingContext.New(config);
             var document = await context.OpenAsync(url);
             await document.WaitForReadyAsync();
+
+            while (document.ReadyState != DocumentReadyState.Complete)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+            }
 
             return document;
         }
@@ -65,6 +66,15 @@ namespace Red.Infrastructure.Spider.Worker
 
         private IReadOnlyCollection<GalleryItem> GetGalleryItems(IDocument document, JsScriptingService js, ObjectInstance galleries)
         {
+            if (_galleryItems == null)
+            {
+                _galleryItems = new List<GalleryItem>();
+            }
+            else
+            {
+                return _galleryItems;
+            }
+
             var objects = new List<GalleryItem>();
 
             foreach (var (key, _) in galleries.GetOwnProperties())
@@ -130,15 +140,18 @@ namespace Red.Infrastructure.Spider.Worker
                         .ToList();
         }
 
-        protected override TimeSpan GetInitialDelay()
+        public IEnumerable<ImageDetail> GetScreenshots()
         {
-            return TimeSpan.FromMinutes(0);
+            var galleryItems = GetGalleryItems(_document, _js, _galleries);
+            return GetImageDetails(GetImagesFromGalleryItems(galleryItems));
         }
 
-        protected override TimeSpan GetTaskInterval()
+        public async Task<IEnumerable<VideoDetail>> GetVideos()
         {
-            return TimeSpan.FromMinutes(5);
+            var galleryItems = GetGalleryItems(_document, _js, _galleries);
+            return await LoadVideoDetails(GetVideosFromGalleryItems(galleryItems));
         }
+
 
         private IReadOnlyCollection<Video> GetVideosFromGalleryItems(IEnumerable<GalleryItem> items)
         {
@@ -156,11 +169,18 @@ namespace Red.Infrastructure.Spider.Worker
                         .ToList();
         }
 
+        public async Task<bool> Init(string url)
+        {
+            _document = await GetDocument(url);
+            _js = _document.Context.GetService<JsScriptingService>();
+            _galleries = GetGalleries(_js, _document);
+
+            return _galleries != null;
+        }
+
         private async Task<IReadOnlyCollection<VideoDetail>> LoadVideoDetails(IEnumerable<Video> videos)
         {
-            //var result = new List<VideoDetail>();
-
-            var result2 = videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl))
+            var result = videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl))
                                 .Select(async x => await new HttpClient().GetAsync(x.PlaylistUrl))
                                 .Select(x => x.Result)
                                 .Where(x => x.IsSuccessStatusCode)
@@ -180,134 +200,8 @@ namespace Red.Infrastructure.Spider.Worker
                                             PreviewImage = x.previewImageUrl
                                         })
                                 .ToList();
-
-            /*
-            foreach (var video in videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl)))
-            {
-                var response = await new HttpClient().GetAsync(video.PlaylistUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var body = await response.Content.ReadAsStringAsync();
-                    var playlist = JsonSerializer.Deserialize<Playlist>(body);
-
-                    if (playlist is not null)
-                    {
-                        foreach (var item in playlist.mediaList)
-                        {
-                            var h264Video = item.mobileUrls.FirstOrDefault(x => x.targetMediaPlatform == "MobileH264");
-
-                            if (h264Video is not null && !string.IsNullOrWhiteSpace(h264Video.mobileUrl))
-                            {
-                                result.Add(
-                                    new VideoDetail
-                                    {
-                                        Title = item.title,
-                                        Url = h264Video.mobileUrl,
-                                        Duration = item.durationInMilliseconds,
-                                        PreviewImage = item.previewImageUrl
-                                    });
-                            }
-                        }
-                    }
-                }
-            }
-
-            var same = result.SequenceEqual(result2);
-            */
-
-            return result2;
-            //return result;
+            return result;
         }
-
-        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
-        {
-            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
-            var gs = await repo.Get()
-                               .Select(
-                                   x => new SwitchGame
-                                   {
-                                       ProductCode = x.ProductCode,
-                                       Region = x.Region,
-                                       Media = x.Media,
-                                       EshopUrl = x.EshopUrl
-                                   })
-                               .ToListAsync();
-            var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl))
-                         .Where(x => x.Media.LastUpdated < DateTime.Today)
-                         .OrderBy(x => x.ProductCode)
-                         .Select(
-                             x => new ScreenshotDto
-                             {
-                                 EshopUrl = x.EshopUrl!,
-                                 Pictures = x.Media,
-                                 ProductCode = x.ProductCode,
-                                 Region = x.Region
-                             })
-                         .ToList();
-
-            // await Task.WhenAll(dtos.ChunkBy(500).Select(UpdateScreenshots).ToList());
-            Log.LogWarning($"UPDATE {dtos.Count} games");
-            await UpdateScreenshots(dtos);
-        }
-
-        private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)
-        {
-            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
-
-            foreach (var dto in chunk)
-            {
-                var start = DateTime.UtcNow;
-                Log.LogInformation(dto.ProductCode);
-
-                try
-                {
-                    var url = $"https://www.nintendo-europe.com/{dto.EshopUrl}#Gallery";
-                    var document = await GetDocument(url);
-                    var js = document.Context.GetService<JsScriptingService>();
-
-                    var galleries = GetGalleries(js, document);
-                    if (galleries == null)
-                    {
-                        continue;
-                    }
-
-                    var galleryItems = GetGalleryItems(document, js, galleries);
-                    var entity = await repo.GetByProductCode(dto.ProductCode);
-                    var screenshots = entity.Media.Screenshots
-                                                                         .Union(GetImageDetails(GetImagesFromGalleryItems(galleryItems)))
-                                                                         .Distinct()
-                                                                         .ToList();
-                    var videos = entity.Media.Videos
-                                                                    .Union(await LoadVideoDetails(GetVideosFromGalleryItems(galleryItems)))
-                                                                    .Distinct()
-                                                                    .ToList();
-                    var updatedEntity = entity with
-                    {
-                        Media = new SwitchGameMedia
-                        {
-                            Screenshots = screenshots,
-                            Videos = videos,
-                            Cover = entity.Media.Cover,
-                            LastUpdated = DateTime.UtcNow
-                        }
-                    };
-
-                    if (!entity.Media.Equals(updatedEntity.Media))
-                    {
-                        Log.LogInformation($"Update {entity.ProductCode}");
-                        await repo.UpdateAsync(updatedEntity);
-                    }
-
-                    Log.LogInformation($"Finished after {(DateTime.UtcNow - start).TotalSeconds}s");
-                }
-                catch (Exception e)
-                {
-                    Log.LogError("FAILED SCREENSHOT THING {msg}", e.Message);
-                }
-            }
-        }
-
 
         #region DTO
 
@@ -361,14 +255,6 @@ namespace Red.Infrastructure.Spider.Worker
             public string orgId { get; init; } = "";
         }
 
-        private class ScreenshotDto
-        {
-            public string EshopUrl { get; init; } = "";
-            public SwitchGameMedia Pictures { get; init; } = new();
-            public string ProductCode { get; init; } = "";
-            public string Region { get; init; } = "";
-        }
-
         private class Video
         {
             public string filename { get; init; } = "";
@@ -385,5 +271,110 @@ namespace Red.Infrastructure.Spider.Worker
         // ReSharper restore InconsistentNaming
 
         #endregion
+    }
+
+    internal sealed class ScreenshotSpider : ScheduledWorker
+    {
+        private readonly IServiceProvider _serviceProvider;
+
+        public ScreenshotSpider(ILogger<ScreenshotSpider> log,
+                                IServiceProvider serviceProvider)
+            : base(log)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        protected override TimeSpan GetInitialDelay()
+        {
+            return TimeSpan.FromMinutes(0);
+        }
+
+        protected override TimeSpan GetTaskInterval()
+        {
+            return TimeSpan.FromMinutes(5);
+        }
+
+        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
+        {
+            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+            var gs = await repo.Get()
+                               .Select(
+                                   x => new SwitchGame
+                                   {
+                                       ProductCode = x.ProductCode,
+                                       Region = x.Region,
+                                       Media = x.Media,
+                                       EshopUrl = x.EshopUrl
+                                   })
+                               .ToListAsync();
+            var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl))
+                         // .Where(x => x.Media.LastUpdated < DateTime.Today)
+                         .OrderBy(x => x.ProductCode)
+                         .Select(
+                             x => new ScreenshotDto
+                             {
+                                 EshopUrl = x.EshopUrl!,
+                                 Pictures = x.Media,
+                                 ProductCode = x.ProductCode,
+                                 Region = x.Region
+                             })
+                         .ToList();
+
+            // await Task.WhenAll(dtos.ChunkBy(500).Select(UpdateScreenshots).ToList());
+            Log.LogWarning($"UPDATE {dtos.Count} games");
+            await UpdateScreenshots(dtos);
+        }
+
+        private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)
+        {
+            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+
+            foreach (var dto in chunk)
+            {
+                var start = DateTime.UtcNow;
+                Log.LogInformation(dto.ProductCode);
+
+                try
+                {
+                    var url = $"https://www.nintendo-europe.com/{dto.EshopUrl}#Gallery";
+                    var loader = new GalleriesLoader();
+                    var initialized = await loader.Init(url);
+
+                    if (!initialized) continue;
+                    var entity = await repo.GetByProductCode(dto.ProductCode);
+
+                    var updatedEntity = entity with
+                    {
+                        Media = new SwitchGameMedia
+                        {
+                            Screenshots = entity.Media.Screenshots.Union(loader.GetScreenshots()).Distinct().ToList(),
+                            Videos = entity.Media.Videos.Union(await loader.GetVideos()).Distinct().ToList(),
+                            Cover = entity.Media.Cover,
+                            LastUpdated = DateTime.UtcNow
+                        }
+                    };
+
+                    if (!entity.Media.Equals(updatedEntity.Media))
+                    {
+                        Log.LogInformation($"Update {entity.ProductCode} ({updatedEntity.Media.Screenshots.Count} screenshots, {updatedEntity.Media.Videos.Count} videos");
+                        await repo.UpdateAsync(updatedEntity);
+                    }
+
+                    Log.LogInformation($"Finished after {(DateTime.UtcNow - start).TotalSeconds}s");
+                }
+                catch (Exception e)
+                {
+                    Log.LogError("FAILED SCREENSHOT THING {msg}", e.Message);
+                }
+            }
+        }
+
+        private class ScreenshotDto
+        {
+            public string EshopUrl { get; init; } = "";
+            public SwitchGameMedia Pictures { get; init; } = new();
+            public string ProductCode { get; init; } = "";
+            public string Region { get; init; } = "";
+        }
     }
 }
