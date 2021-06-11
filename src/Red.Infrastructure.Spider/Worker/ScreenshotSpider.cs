@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
+#pragma warning disable
 
 namespace Red.Infrastructure.Spider.Worker
 {
@@ -286,12 +287,12 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override TimeSpan GetInitialDelay()
         {
-            return TimeSpan.FromMinutes(0);
+            return TimeSpan.FromMinutes(60);
         }
 
         protected override TimeSpan GetTaskInterval()
         {
-            return TimeSpan.FromMinutes(5);
+            return TimeSpan.FromHours(24);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

@@ -3,13 +3,20 @@ using System.Linq;
 
 namespace Red.Core.Domain.Models
 {
+    public sealed record NintendoPrice
+    {
+        public string Country { get; init; } = "";
+        public float Amount { get; init; }
+        public string Currency { get; init; } = "";
+    }
+
     public sealed record SwitchGamePriceDetails
     {
-        // todo: add country/region flags for floats. shit cant work like this
-        // public float? AllTimeHigh { get; init; }
-        // public float? AllTimeLow { get; init; }
-        // public float? RegularPrice { get; init; }
-        public IReadOnlyCollection<PriceRecord> History { get; init; } = new List<PriceRecord>(0);
+        public bool OnDiscount { get; init; }
+        public List<NintendoPrice> AllTimeHigh { get; init; } = new();
+        public List<NintendoPrice> AllTimeLow { get; init; } = new();
+        public List<NintendoPrice> RegularPrice { get; init; } = new();
+        public List<PriceRecord> History { get; init; } = new List<PriceRecord>(0);
 
         public bool Equals(SwitchGamePriceDetails? other)
         {

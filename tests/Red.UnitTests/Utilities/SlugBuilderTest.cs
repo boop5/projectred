@@ -1,8 +1,10 @@
-﻿using Red.Infrastructure.Utilities;
+﻿using System.Diagnostics.CodeAnalysis;
+using Red.Infrastructure.Utilities;
 using Xunit;
 
 namespace Red.UnitTests.Utilities
 {
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
     public class SlugBuilderTest
     {
         [Fact]
@@ -57,6 +59,18 @@ namespace Red.UnitTests.Utilities
             Assert.Equal("foo-bar-17", sut.Build("Foo Bar XVII"));
             Assert.Equal("foo-bar-18", sut.Build("Foo Bar XVIII"));
             Assert.Equal("foo-bar-19", sut.Build("Foo Bar XIX"));
+            Assert.Equal("1234", sut.Build("1234"));
+            Assert.Equal("1234", sut.Build("   1234   "));
+            Assert.Equal("1234", sut.Build("- - - 1234 - - -"));
+
+            Assert.Null(sut.Build("        "));
+            Assert.Null(sut.Build(""));
+            Assert.Null(sut.Build(null));
+            Assert.Null(sut.Build("------"));
+            Assert.Null(sut.Build("*****"));
+            Assert.Null(sut.Build("+++++"));
+            Assert.Null(sut.Build("______"));
+            Assert.Null(sut.Build("______"));
         }
     }
 }

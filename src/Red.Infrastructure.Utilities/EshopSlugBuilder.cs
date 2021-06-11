@@ -5,8 +5,13 @@ namespace Red.Infrastructure.Utilities
 {
     internal sealed class EshopSlugBuilder : SlugBuilder, IEshopSlugBuilder
     {
-        public override string Build(string input)
+        public override string? Build(string? input)
         {
+            if (input == null)
+            {
+                return null;
+            }
+
             var output = input;
 
             // remove "for nintendo switch"

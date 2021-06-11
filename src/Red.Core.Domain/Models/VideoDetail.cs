@@ -11,7 +11,7 @@ namespace Red.Core.Domain.Models
 
         public string? PreviewImage { get; init; }
         public string? Title { get; init; }
-        public string Url { get; init; }
+        public string Url { get; init; } = "";
 
         public bool Equals(VideoDetail? other)
         {

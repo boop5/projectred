@@ -8,8 +8,13 @@ namespace Red.Infrastructure.Utilities
 {
     internal class SlugBuilder : ISlugBuilder
     {
-        public virtual string Build(string input)
+        public virtual string? Build(string? input)
         {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return null;
+            }
+
             // todo: check performance, probably very inefficient method
             var output = input;
 
@@ -41,8 +46,16 @@ namespace Red.Infrastructure.Utilities
             // remove multiple dashes
             output = Regex.Replace(output, "[-]{2,}", "-");
 
-            // remove non alphanumeric characters at start and end
-            output = Regex.Replace(output, "^([^a-z0-9]+)([a-z0-9 -]+?)([^a-z0-9]+)$", "$2");
+            // remove non alphanumeric characters at start
+            output = Regex.Replace(output, "^([^a-z0-9]+)(.*)$", "$2");
+
+            // remove non alphanumeric characters at end
+            output = Regex.Replace(output, "^(.*)([^a-z0-9]+)$", "$1");
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return null;
+            }
 
             return output;
         }
@@ -100,7 +113,12 @@ namespace Red.Infrastructure.Utilities
             foreach (var part in parts)
             {
                 var n = Roman2Arabic(part);
-                result.Add(n != null ? n.ToString() : part);
+                var p = n != null ? n.ToString() : part;
+
+                if (p != null)
+                {
+                    result.Add(p);
+                }
             }
 
             output = string.Join("", result);

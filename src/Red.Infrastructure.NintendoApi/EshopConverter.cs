@@ -20,24 +20,6 @@ namespace Red.Infrastructure.NintendoApi
             _slugBuilder = slugBuilder;
         }
 
-        private string? BuildSlug(LibrarySearchGame game)
-        {
-            if (string.IsNullOrWhiteSpace(game.Title))
-            {
-                return null;
-            }
-
-            try
-            {
-                return _slugBuilder.Build(game.Title);
-            }
-            catch (Exception e)
-            {
-                Log.LogWarning(e, "Failed to build slug for {game}", game);
-                return null;
-            }
-        }
-
         public SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
         {
             return new()
@@ -66,7 +48,7 @@ namespace Red.Infrastructure.NintendoApi
                 RemovedFromEshop = game.RemovedFromEshop,
                 Title = game.Title,
                 SupportsCloudSave = game.SupportsCloudSave,
-                Slug = BuildSlug(game),
+                Slug = _slugBuilder.Build(game.Title),
                 // todo: Insert actual region
                 Region = "EU",
                 ProductCode = game.ProductCodeSS![0].Trim(),

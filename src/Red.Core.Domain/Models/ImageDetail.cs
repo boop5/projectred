@@ -5,7 +5,7 @@ namespace Red.Core.Domain.Models
     public sealed record ImageDetail
     {
         public string? Title { get; init; }
-        public string Url { get; init; }
+        public string Url { get; init; } = "";
 
         public bool Equals(ImageDetail? other)
         {

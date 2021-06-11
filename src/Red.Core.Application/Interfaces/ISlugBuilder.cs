@@ -5,12 +5,7 @@
         /// <summary>
         ///     Creates a http conform uri.
         /// </summary>
-        /// <param name="input">The string to conform</param>
-        string Build(string input);
-    }
-
-    public interface IEshopSlugBuilder : ISlugBuilder
-    {
-
+        /// <param name="input">The string to convert. Can be null.</param>
+        string? Build(string? input);
     }
 }
