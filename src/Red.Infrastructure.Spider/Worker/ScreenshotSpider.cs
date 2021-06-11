@@ -134,19 +134,26 @@ namespace Red.Infrastructure.Spider.Worker
                     {
                         if (js.EvaluateScript(document, $"galleries[{key}][{i}]") is ObjectInstance item)
                         {
+                            string GetValue(string k)
+                            {
+                                return item.HasOwnProperty(k) 
+                                    ? item.GetOwnProperty(k).Value.AsString() 
+                                    : string.Empty;
+                            }
+
                             objects.Add(
                                 new GalleryItem
                                 {
-                                    isVideo = item.GetProperty("isVideo")?.Value?.AsBoolean() ?? false,
-                                    video_id = item.GetProperty("video_id")?.Value?.AsString() ?? "",
-                                    video_embed_url = item.GetProperty("video_embed_url")?.Value?.AsString() ?? "",
-                                    video_thumbnail_url = item.GetProperty("video_thumbnail_url")?.Value?.AsString() ?? "",
-                                    video_content_url = item.GetProperty("video_content_url")?.Value?.AsString() ?? "",
-                                    filename = item.GetProperty("filename")?.Value?.AsString() ?? "",
-                                    image_url = item.GetProperty("image_url")?.Value?.AsString() ?? "",
-                                    title = item.GetProperty("title")?.Value.AsString() ?? "",
-                                    descr = item.GetProperty("descr")?.Value.AsString() ?? "",
-                                    type = item.GetProperty("type")?.Value.AsString() ?? ""
+                                    isVideo = item.HasOwnProperty("isVideo") && item.GetOwnProperty("isVideo").Value.AsBoolean(),
+                                    video_id = GetValue("video_id"),
+                                    video_embed_url = GetValue("video_embed_url"),
+                                    video_thumbnail_url = GetValue("video_thumbnail_url"),
+                                    video_content_url = GetValue("video_content_url"),
+                                    filename = GetValue("filename"),
+                                    image_url = GetValue("image_url"),
+                                    title = GetValue("title"),
+                                    descr = GetValue("descr"),
+                                    type = GetValue("type"),
                                 });
                         }
                     }

@@ -10,6 +10,10 @@ namespace Red.Infrastructure.NintendoApi
     // todo: download ranking query         https://ec.nintendo.com/api/DE/de/search/ranking?count=10&offset=0
     // source: https://github.com/cutecore/Nintendo-Switch-eShop-API
 
+    // more:
+    // https://searching.nintendo-europe.com/de/select?q=*&start=0&rows=1&fq=*:*&fq=game_series_txt:%22super_smash_bros%22&fq=pg_s:GAME&fq=dates_released_dts:[*%20TO%20NOW]&fq=nsuid_txt:*&sort=score%20desc,%20date_from%20desc&wt=json
+    // https://searching.nintendo-europe.com/de/select?q=*&start=0&rows=1&fq=*:*&fq=game_series_txt:%22super_smash_bros%22&fq=pg_s:MERCHANDISE&wt=json
+
     internal sealed class EshopUrlBuilder
     {
         private ILogger<EshopUrlBuilder> Log { get; }
