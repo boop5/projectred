@@ -111,6 +111,11 @@ namespace Red.Infrastructure.NintendoApi
                 return EshopSalesStatus.Unreleased;
             }
 
+            if (string.Equals(text, "preorder", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return EshopSalesStatus.PreOrder;
+            }
+
             if (text != null)
             {
                 Log.LogWarning($"Found unknown SalesStatus '{text}'");

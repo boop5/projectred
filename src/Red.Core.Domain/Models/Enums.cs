@@ -6,6 +6,7 @@
         NotFound,
         SalesTermination,
         Unreleased,
+        PreOrder,
         Unknown
     }
 
