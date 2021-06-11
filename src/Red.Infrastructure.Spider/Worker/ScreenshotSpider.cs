@@ -13,7 +13,6 @@ using Jint.Native.Array;
 using Jint.Native.Object;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
@@ -274,11 +273,11 @@ namespace Red.Infrastructure.Spider.Worker
         #endregion
     }
 
-    internal sealed class ScreenshotSpider : ScheduledWorker
+    internal sealed class ScreenshotSpider : TimedWorker
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public ScreenshotSpider(ILogger<ScreenshotSpider> log,
+        public ScreenshotSpider(IAppLogger<ScreenshotSpider> log,
                                 IServiceProvider serviceProvider)
             : base(log)
         {

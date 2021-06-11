@@ -2,18 +2,18 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Red.Core.Application.Interfaces;
 
 namespace Red.Core.Application
 {
-    public abstract class ScheduledWorker : BackgroundService
+    public abstract class TimedWorker : BackgroundService
     {
         private TimeSpan _initialDelay;
         private TimeSpan _taskInterval;
 
-        protected ILogger Log { get; }
+        protected IAppLogger Log { get; }
 
-        protected ScheduledWorker(ILogger log)
+        protected TimedWorker(IAppLogger log)
         {
             Log = log;
 
@@ -30,7 +30,7 @@ namespace Red.Core.Application
             while (!stoppingToken.IsCancellationRequested)
             {
                 var started = DateTime.UtcNow;
-                Log.LogDebug("Start execution");
+                Log.LogInformation("Start execution");
 
                 try
                 {
@@ -39,7 +39,7 @@ namespace Red.Core.Application
                 catch (Exception e)
                 {
                     var duration = DateTime.UtcNow - started;
-                    Log.LogWarning(e, $"Failed to execute worker after {duration:g}");
+                    Log.LogWarning(e, "Failed to execute worker after {timePassed}", duration.ToString("g"));
                 }
                 finally
                 {
@@ -51,10 +51,10 @@ namespace Red.Core.Application
                         interval = _taskInterval - duration;
                     }
 
-                    Log.LogDebug($"Stop execution after {duration:g}");
+                    Log.LogDebug("Stop execution after {timePassed}", duration.ToString("g"));
 
                     // wait for next iteration
-                    Log.LogDebug("Next execution in {time}", interval.ToString("g"));
+                    Log.LogDebug("Next execution in {timeLeft}", interval.ToString("g"));
                     await Task.Delay(interval, stoppingToken);
                 }
             }

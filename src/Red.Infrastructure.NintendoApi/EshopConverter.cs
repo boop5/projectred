@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Models;
@@ -12,9 +11,9 @@ namespace Red.Infrastructure.NintendoApi
     internal sealed class EshopConverter
     {
         private readonly ISlugBuilder _slugBuilder;
-        private ILogger<EshopConverter> Log { get; }
+        private IAppLogger<EshopConverter> Log { get; }
 
-        public EshopConverter(ILogger<EshopConverter> log, ISlugBuilder slugBuilder)
+        public EshopConverter(IAppLogger<EshopConverter> log, ISlugBuilder slugBuilder)
         {
             Log = log;
             _slugBuilder = slugBuilder;

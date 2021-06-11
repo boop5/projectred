@@ -28,9 +28,9 @@ namespace Red.Core.Domain.Models
             }
         }
 
-        public EshopMultiPriceQuery(List<string> nsuids)
+        public EshopMultiPriceQuery(IEnumerable<string> nsuids)
         {
-            Nsuids = nsuids;
+            Nsuids = nsuids.ToList();
         }
 
         public EshopMultiPriceQuery(params string[] nsuids)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
@@ -15,9 +14,9 @@ namespace Red.Infrastructure.NintendoApi
         private readonly EshopConverter _converter;
         private readonly EshopHttpClient _http;
         private readonly EshopUrlBuilder _urlBuilder;
-        private ILogger<Eshop> Log { get; }
+        private IAppLogger<Eshop> Log { get; }
 
-        public Eshop(ILogger<Eshop> log,
+        public Eshop(IAppLogger<Eshop> log,
                      EshopHttpClient http,
                      EshopUrlBuilder urlBuilder,
                      EshopConverter converter)

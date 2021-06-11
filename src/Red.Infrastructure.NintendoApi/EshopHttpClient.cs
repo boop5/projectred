@@ -3,15 +3,15 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Red.Core.Application.Interfaces;
 
 namespace Red.Infrastructure.NintendoApi
 {
     internal sealed class EshopHttpClient : HttpClient
     {
-        private ILogger<EshopHttpClient> Log { get; }
+        private IAppLogger<EshopHttpClient> Log { get; }
 
-        public EshopHttpClient(ILogger<EshopHttpClient> log)
+        public EshopHttpClient(IAppLogger<EshopHttpClient> log)
             : base(new HttpClientHandler {Proxy = null, UseProxy = false})
         {
             Log = log;

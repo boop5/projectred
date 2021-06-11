@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Red.Infrastructure.Logging;
 using Red.Infrastructure.NintendoApi;
 using Red.Infrastructure.Persistence;
 using Red.Infrastructure.Spider.Worker;
@@ -13,6 +14,7 @@ Host.CreateDefaultBuilder(args)
             var cfg = hostContext.Configuration;
 
             services.AddUtilities();
+            services.AddLoggingLayer();
             services.AddPersistenceLayer(cfg.GetConnectionString("Default"));
             services.AddNintendoApi();
 

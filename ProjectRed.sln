@@ -23,11 +23,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Persiste
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.NintendoApi", "src\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj", "{D1F9321D-613F-4AC1-89E5-A6B473F98F94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.Infrastructure.Utilities", "src\Red.Infrastructure.Utilities\Red.Infrastructure.Utilities.csproj", "{7DA33865-8A9B-4DD5-9E51-92E07B597AFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.Infrastructure.Utilities", "src\Red.Infrastructure.Utilities\Red.Infrastructure.Utilities.csproj", "{7DA33865-8A9B-4DD5-9E51-92E07B597AFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1FF54C7B-7F17-4FEF-A570-CA94A5B910B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.UnitTests", "tests\Red.UnitTests\Red.UnitTests.csproj", "{A616B1ED-5F84-4321-AAA7-CE62B499D2F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Red.UnitTests", "tests\Red.UnitTests\Red.UnitTests.csproj", "{A616B1ED-5F84-4321-AAA7-CE62B499D2F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Red.Infrastructure.Logging", "src\Red.Infrastructure.Logging\Red.Infrastructure.Logging.csproj", "{803D26E3-A0D3-4BD5-BE66-104861640E5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{A616B1ED-5F84-4321-AAA7-CE62B499D2F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A616B1ED-5F84-4321-AAA7-CE62B499D2F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A616B1ED-5F84-4321-AAA7-CE62B499D2F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{803D26E3-A0D3-4BD5-BE66-104861640E5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{803D26E3-A0D3-4BD5-BE66-104861640E5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{803D26E3-A0D3-4BD5-BE66-104861640E5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{803D26E3-A0D3-4BD5-BE66-104861640E5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

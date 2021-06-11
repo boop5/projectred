@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Microsoft.Extensions.Logging;
+using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Util;
 
@@ -16,9 +16,9 @@ namespace Red.Infrastructure.NintendoApi
 
     internal sealed class EshopUrlBuilder
     {
-        private ILogger<EshopUrlBuilder> Log { get; }
+        private IAppLogger<EshopUrlBuilder> Log { get; }
 
-        public EshopUrlBuilder(ILogger<EshopUrlBuilder> log)
+        public EshopUrlBuilder(IAppLogger<EshopUrlBuilder> log)
         {
             Log = log;
         }

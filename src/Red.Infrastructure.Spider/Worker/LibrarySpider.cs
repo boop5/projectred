@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider.Worker
 {
-    public class LibrarySpider : ScheduledWorker
+    public class LibrarySpider : TimedWorker
     {
         private readonly IEshop _eshop;
         private readonly IServiceProvider _sp;
 
-        public LibrarySpider(ILogger<LibrarySpider> log,
+        public LibrarySpider(IAppLogger<LibrarySpider> log,
                              IServiceProvider sp,
                              IEshop eshop)
             : base(log)

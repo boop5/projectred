@@ -2,16 +2,16 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Red.Core.Application.Interfaces;
 
 namespace Red.Infrastructure.Persistence
 {
     internal sealed class DbInitializer
     {
-        private ILogger<DbInitializer> Log { get; }
+        private IAppLogger<DbInitializer> Log { get; }
         private readonly IServiceProvider _serviceProvider;
 
-        public DbInitializer(ILogger<DbInitializer> log, IServiceProvider serviceProvider)
+        public DbInitializer(IAppLogger<DbInitializer> log, IServiceProvider serviceProvider)
         {
             Log = log;
             _serviceProvider = serviceProvider;

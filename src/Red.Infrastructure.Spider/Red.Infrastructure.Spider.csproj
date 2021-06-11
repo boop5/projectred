@@ -17,11 +17,11 @@
     <PackageReference Include="AngleSharp" Version="0.15.0" />
     <PackageReference Include="AngleSharp.Js" Version="0.14.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Red.Core.Application\Red.Core.Application.csproj" />
+    <ProjectReference Include="..\Red.Infrastructure.Logging\Red.Infrastructure.Logging.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.Utilities\Red.Infrastructure.Utilities.csproj" />
