@@ -76,7 +76,7 @@ namespace Red.Infrastructure.Persistence
         {
             try
             {
-                return Context.Set<TEntity>();
+                return Context.Set<TEntity>().AsNoTracking();
             }
             catch (Exception ex)
             {

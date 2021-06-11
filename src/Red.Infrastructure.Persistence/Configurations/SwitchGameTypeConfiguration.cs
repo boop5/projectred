@@ -38,7 +38,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Categories)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions) ?? new List<string>());
+                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Categories)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
@@ -51,7 +51,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Languages)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions) ?? new List<string>());
+                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Languages)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
@@ -64,7 +64,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Nsuids)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>?>(x, serializerOptions) ?? new List<string>());
+                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>());
             builder.Property(x => x.Nsuids)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());

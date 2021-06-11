@@ -16,7 +16,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                     Categories = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Languages = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Nsuids = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Pictures = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Media = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PlayModes = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Popularity = table.Column<int>(type: "int", nullable: false),

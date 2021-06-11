@@ -6,6 +6,8 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGameMedia
     {
+        public DateTime? LastUpdated { get; init; }
+
         /// <summary>uri to image.</summary>
         public ImageDetail? Cover { get; init; }
 
@@ -26,12 +28,13 @@ namespace Red.Core.Domain.Models
             }
 
             return Screenshots.SequenceEqual(other.Screenshots)
+                   && Videos.SequenceEqual(other.Videos)
                    && Cover == other.Cover;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Screenshots, Cover);
+            return HashCode.Combine(Screenshots, Videos, Cover);
         }
     }
 }

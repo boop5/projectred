@@ -59,14 +59,14 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<int?>("MaxPlayers")
                         .HasColumnType("int");
 
+                    b.Property<string>("Media")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MinPlayers")
                         .HasColumnType("int");
 
                     b.Property<string>("Nsuids")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pictures")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

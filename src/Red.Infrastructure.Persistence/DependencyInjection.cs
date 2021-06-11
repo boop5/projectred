@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,14 +15,11 @@ namespace Red.Infrastructure.Persistence
         {
             services.AddDbContextFactory<LibraryContext>(o => BuildDbContextOptions(connectionString, o));
             services.AddDbContext<LibraryContext>(o => BuildDbContextOptions(connectionString, o));
-
             services.AddTransient<ISwitchGameRepository, SwitchGameRepository>();
+            services.AddTransient<DbInitializer>();
 
-            using var ctx = services.BuildServiceProvider().GetRequiredService<LibraryContext>();
-            if (ctx.Database.GetPendingMigrations().Any())
-            {
-                ctx.Database.Migrate();
-            }
+            var dbInitializer = services.BuildServiceProvider().GetRequiredService<DbInitializer>();
+            dbInitializer.Init();
 
             return services;
         }

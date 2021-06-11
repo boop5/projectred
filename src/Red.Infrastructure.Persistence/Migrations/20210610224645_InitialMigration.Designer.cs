@@ -10,7 +10,7 @@ using Red.Infrastructure.Persistence;
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20210610193421_InitialMigration")]
+    [Migration("20210610224645_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,14 +61,14 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<int?>("MaxPlayers")
                         .HasColumnType("int");
 
+                    b.Property<string>("Media")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MinPlayers")
                         .HasColumnType("int");
 
                     b.Property<string>("Nsuids")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pictures")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
