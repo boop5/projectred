@@ -36,6 +36,7 @@ namespace Red.Infrastructure.Spider.Worker
             return TimeSpan.FromMinutes(5);
         }
 
+
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
@@ -82,142 +83,24 @@ namespace Red.Infrastructure.Spider.Worker
         private async Task UpdatePrice(SwitchGame game, SwitchGamePrice price, ISwitchGameRepository repo)
         {
             // todo: use actual country
-            var country = "DE";
+            string country = "DE";
             var entity = await repo.GetByProductCode(game.ProductCode);
             var lastPrice = game.Price.History.OrderBy(x => x.Date).LastOrDefault(x => x.Country == country);
-
-            // todo: refactor this into non-local methods
-
-            #region Update Methods
-
-            SwitchGamePriceDetails UpdateRegularPrice(SwitchGamePriceDetails details)
+            var ctx = new UpdateContext
             {
-                if (price.RegularPrice.HasValue && !string.IsNullOrWhiteSpace(price.Currency))
-                {
-                    var rp = game.Price.RegularPrice;
-                    rp[country] = UndatedPriceRecord.New(country, price.RegularPrice.Value, price.Currency);
+                Game = game,
+                Price = price,
+                Country = country,
+                LastPrice = lastPrice
+            };
 
-                    if (!details.RegularPrice.Equals(rp))
-                    {
-                        return details with
-                        {
-                            RegularPrice = rp
-                        };
-                    }
-                }
-
-                return details;
-            }
-
-            SwitchGamePriceDetails UpdateDiscount(SwitchGamePriceDetails details)
-            {
-                if (price.Discounted && price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(price.Currency))
-                {
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (lastPrice == null || lastPrice.Price.Amount != price.CurrentPrice)
-                    {
-                        var history = game.Price.History.ToList();
-                        history.Add(DatedPriceRecord.New(country, price.CurrentPrice!.Value, price.Currency!));
-
-                        return details with
-                        {
-                            History = history
-                        };
-                    }
-                }
-
-                return details;
-            }
-
-            SwitchGamePriceDetails InitializeHistory(SwitchGamePriceDetails details)
-            {
-                if (!price.Discounted && !string.IsNullOrWhiteSpace(price.Currency))
-                {
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (lastPrice == null || price.RegularPrice.HasValue && lastPrice.Price.Amount != price.RegularPrice)
-                    {
-                        var history = game.Price.History.ToList();
-                        history.Add(DatedPriceRecord.New(country!, price.RegularPrice!.Value, price.Currency!));
-
-                        return details with
-                        {
-                            History = history
-                        };
-                    }
-                }
-
-                return details;
-            }
-
-            SwitchGamePriceDetails UpdateSalesStatus(SwitchGamePriceDetails details)
-            {
-                if (price.SalesStatus != details.SalesStatus)
-                {
-                    return details with
-                    {
-                        SalesStatus = price.SalesStatus
-                    };
-                }
-
-                return details;
-            }
-
-            SwitchGamePriceDetails UpdateAllTimeLow(SwitchGamePriceDetails details)
-            {
-                if (!price.RegularPrice.HasValue || string.IsNullOrWhiteSpace(price.Currency))
-                {
-                    return details;
-                }
-
-                var atl = details.AllTimeLow.SingleOrDefault(x => x.Country == country);
-                var lowestPrice = Math.Min(price.CurrentPrice ?? int.MaxValue, price.RegularPrice.Value);
-
-                if (atl == null || atl.Price.Amount > lowestPrice)
-                {
-                    var newAtl = details.AllTimeLow.ToList();
-                    newAtl.Add(UndatedPriceRecord.New(country, lowestPrice, price.Currency));
-
-                    return details with
-                    {
-                        AllTimeLow = newAtl
-                    };
-                }
-
-                return details;
-            }
-
-            SwitchGamePriceDetails UpdateAllTimeHigh(SwitchGamePriceDetails details)
-            {
-                if (!price.RegularPrice.HasValue || string.IsNullOrWhiteSpace(price.Currency))
-                {
-                    return details;
-                }
-
-                var ath = details.AllTimeHigh.SingleOrDefault(x => x.Country == country);
-                var highestPrice = Math.Max(price.CurrentPrice ?? int.MinValue, price.RegularPrice.Value);
-
-                if (ath == null || ath.Price.Amount < highestPrice)
-                {
-                    var newAtl = details.AllTimeHigh.ToList();
-                    newAtl.Add(UndatedPriceRecord.New(country, highestPrice, price.Currency));
-
-                    return details with
-                    {
-                        AllTimeHigh = newAtl
-                    };
-                }
-
-                return details;
-            }
-
-            #endregion
-
-            var updatedPrice = UpdateRegularPrice(entity.Price with { });
-            updatedPrice = UpdateDiscount(updatedPrice);
-            updatedPrice = InitializeHistory(updatedPrice);
-            updatedPrice = UpdateSalesStatus(updatedPrice);
-            updatedPrice = UpdateAllTimeLow(updatedPrice);
-            updatedPrice = UpdateAllTimeHigh(updatedPrice);
+            var updatedPrice = entity.Price with { };
+            updatedPrice = UpdateRegularPrice(ctx, updatedPrice);
+            updatedPrice = UpdateDiscount(ctx, updatedPrice);
+            updatedPrice = InitializeHistory(ctx, updatedPrice);
+            updatedPrice = UpdateSalesStatus(ctx, updatedPrice);
+            updatedPrice = UpdateAllTimeLow(ctx, updatedPrice);
+            updatedPrice = UpdateAllTimeHigh(ctx, updatedPrice);
 
             var updatedEntity = entity with {Price = updatedPrice};
             if (!entity.Price.Equals(updatedEntity.Price))
@@ -226,5 +109,137 @@ namespace Red.Infrastructure.Spider.Worker
                 await repo.UpdateAsync(updatedEntity);
             }
         }
+
+        #region UpdateContext Methods
+
+        private sealed record UpdateContext
+        {
+            public string Country { get; init; }
+            public SwitchGame Game { get; init; }
+            public DatedPriceRecord? LastPrice { get; init; }
+            public SwitchGamePrice Price { get; init; }
+        }
+
+        private static SwitchGamePriceDetails InitializeHistory(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (!ctx.Price.Discounted && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
+            {
+                if (ctx.LastPrice == null || ctx.Price.RegularPrice.HasValue
+                    && ctx.LastPrice.Price.Amount - ctx.Price.RegularPrice < 0.01)
+                {
+                    var history = ctx.Game.Price.History.ToList();
+                    history.Add(DatedPriceRecord.New(ctx.Country, ctx.Price.RegularPrice!.Value, ctx.Price.Currency!));
+
+                    return details with
+                    {
+                        History = history
+                    };
+                }
+            }
+
+            return details;
+        }
+
+        private static SwitchGamePriceDetails UpdateAllTimeHigh(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (!ctx.Price.RegularPrice.HasValue || string.IsNullOrWhiteSpace(ctx.Price.Currency))
+            {
+                return details;
+            }
+
+            var ath = details.AllTimeHigh.SingleOrDefault(x => x.Country == ctx.Country);
+            var highestPrice = Math.Max(ctx.Price.CurrentPrice ?? int.MinValue, ctx.Price.RegularPrice.Value);
+
+            if (ath == null || ath.Price.Amount < highestPrice)
+            {
+                var newAtl = details.AllTimeHigh.ToList();
+                newAtl.Add(UndatedPriceRecord.New(ctx.Country, highestPrice, ctx.Price.Currency));
+
+                return details with
+                {
+                    AllTimeHigh = newAtl
+                };
+            }
+
+            return details;
+        }
+
+        private static SwitchGamePriceDetails UpdateAllTimeLow(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (!ctx.Price.RegularPrice.HasValue || string.IsNullOrWhiteSpace(ctx.Price.Currency))
+            {
+                return details;
+            }
+
+            var atl = details.AllTimeLow.SingleOrDefault(x => x.Country == ctx.Country);
+            var lowestPrice = Math.Min(ctx.Price.CurrentPrice ?? int.MaxValue, ctx.Price.RegularPrice.Value);
+
+            if (atl == null || atl.Price.Amount > lowestPrice)
+            {
+                var newAtl = details.AllTimeLow.ToList();
+                newAtl.Add(UndatedPriceRecord.New(ctx.Country, lowestPrice, ctx.Price.Currency));
+
+                return details with
+                {
+                    AllTimeLow = newAtl
+                };
+            }
+
+            return details;
+        }
+
+        private static SwitchGamePriceDetails UpdateDiscount(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (ctx.Price.Discounted && ctx.Price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
+            {
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (ctx.LastPrice == null || ctx.LastPrice.Price.Amount != ctx.Price.CurrentPrice)
+                {
+                    var history = ctx.Game.Price.History.ToList();
+                    history.Add(DatedPriceRecord.New(ctx.Country, ctx.Price.CurrentPrice!.Value, ctx.Price.Currency!));
+
+                    return details with
+                    {
+                        History = history
+                    };
+                }
+            }
+
+            return details;
+        }
+
+        private static SwitchGamePriceDetails UpdateRegularPrice(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (ctx.Price.RegularPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
+            {
+                var rp = ctx.Game.Price.RegularPrice;
+                rp[ctx.Country] = UndatedPriceRecord.New(ctx.Country, ctx.Price.RegularPrice.Value, ctx.Price.Currency);
+
+                if (!details.RegularPrice.Equals(rp))
+                {
+                    return details with
+                    {
+                        RegularPrice = rp
+                    };
+                }
+            }
+
+            return details;
+        }
+
+        private static SwitchGamePriceDetails UpdateSalesStatus(UpdateContext ctx, SwitchGamePriceDetails details)
+        {
+            if (ctx.Price.SalesStatus != details.SalesStatus)
+            {
+                return details with
+                {
+                    SalesStatus = ctx.Price.SalesStatus
+                };
+            }
+
+            return details;
+        }
+
+        #endregion
     }
 }
