@@ -24,6 +24,11 @@ namespace Red.Core.Domain.Models
                 {
                     var existingRecord = GetByCountry(country);
 
+                    if (Equals(existingRecord, value))
+                    {
+                        return;
+                    }
+
                     if (existingRecord != null)
                     {
                         _records.Remove(existingRecord);

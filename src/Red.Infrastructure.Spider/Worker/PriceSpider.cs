@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Red.Core.Application;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
@@ -14,15 +15,15 @@ namespace Red.Infrastructure.Spider.Worker
     public class PriceSpider : TimedWorker
     {
         private readonly IEshop _eshop;
-        private readonly ISwitchGameRepository _repo;
+        private readonly IServiceProvider _serviceProvider;
 
         public PriceSpider(IAppLogger<PriceSpider> log,
                            IEshop eshop,
-                           ISwitchGameRepository repo)
+                           IServiceProvider serviceProvider)
             : base(log)
         {
             _eshop = eshop;
-            _repo = repo;
+            _serviceProvider = serviceProvider;
         }
 
         protected override TimeSpan GetInitialDelay()
@@ -37,28 +38,35 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            var games = await _repo.Get()
-                                   .OrderByDescending(x => x.ReleaseDate)
-                                   .Select(
-                                       x => new SwitchGame
-                                       {
-                                           Nsuids = x.Nsuids,
-                                           ProductCode = x.ProductCode,
-                                           Region = x.Region,
-                                           Price = x.Price,
-                                           Title = x.Title
-                                       })
-                                   .ToListAsync(stoppingToken);
+            var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+            var games = await repo.Get()
+                                  .OrderByDescending(x => x.ReleaseDate)
+                                  .Select(
+                                      x => new SwitchGame
+                                      {
+                                          Nsuids = x.Nsuids,
+                                          ProductCode = x.ProductCode,
+                                          Region = x.Region,
+                                          Price = x.Price,
+                                          Title = x.Title
+                                      })
+                                  .ToListAsync(stoppingToken);
 
             // todo: what are we gonna do about games with multiple nsuids?
-            foreach (var chunk in games.Where(x => x.Nsuids.Count == 1).ChunkBy(50))
+            var chunks = games.Where(x => x.Nsuids.Count == 1).ChunkBy(50).ToList();
+            var processChunksAtOnce = 10;
+
+            foreach (var groupOfChunks in chunks.ChunkBy(processChunksAtOnce))
             {
-                await UpdateGames(chunk.ToList());
+                var tasks = groupOfChunks.Select(x => UpdateGames(x.ToList()));
+
+                await Task.WhenAll(tasks);
             }
         }
 
         private async Task UpdateGames(IReadOnlyCollection<SwitchGame> games)
         {
+            var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
             var nsuids = games.Select(x => x.Nsuids[0]);
             var query = new EshopMultiPriceQuery(nsuids);
             var prices = await _eshop.GetPrices(query);
@@ -67,19 +75,19 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 // todo: cant use single when we allow games with multiple nsuids - see above
                 var game = games.Single(x => x.Nsuids.Contains(price.Nsuid));
-
-                await UpdatePrice(game, price);
+                await UpdatePrice(game, price, repo);
             }
         }
 
-        private async Task UpdatePrice(SwitchGame game, SwitchGamePrice price)
+        private async Task UpdatePrice(SwitchGame game, SwitchGamePrice price, ISwitchGameRepository repo)
         {
             // todo: use actual country
             var country = "DE";
-            var entity = await _repo.GetByProductCode(game.ProductCode);
+            var entity = await repo.GetByProductCode(game.ProductCode);
             var lastPrice = game.Price.History.OrderBy(x => x.Date).LastOrDefault(x => x.Country == country);
-            
+
             // todo: refactor this into non-local methods
+
             #region Update Methods
 
             SwitchGamePriceDetails UpdateRegularPrice(SwitchGamePriceDetails details)
@@ -100,7 +108,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 return details;
             }
-            
+
             SwitchGamePriceDetails UpdateDiscount(SwitchGamePriceDetails details)
             {
                 if (price.Discounted && price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(price.Currency))
@@ -120,7 +128,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 return details;
             }
-           
+
             SwitchGamePriceDetails InitializeHistory(SwitchGamePriceDetails details)
             {
                 if (!price.Discounted && !string.IsNullOrWhiteSpace(price.Currency))
@@ -140,7 +148,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 return details;
             }
-           
+
             SwitchGamePriceDetails UpdateSalesStatus(SwitchGamePriceDetails details)
             {
                 if (price.SalesStatus != details.SalesStatus)
@@ -201,7 +209,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 return details;
             }
-            
+
             #endregion
 
             var updatedPrice = UpdateRegularPrice(entity.Price with { });
@@ -215,7 +223,7 @@ namespace Red.Infrastructure.Spider.Worker
             if (!entity.Price.Equals(updatedEntity.Price))
             {
                 Log.LogInformation("Update price for {title} ({productCode})", game.Title ?? "", game.ProductCode);
-                await _repo.UpdateAsync(updatedEntity);
+                await repo.UpdateAsync(updatedEntity);
             }
         }
     }
