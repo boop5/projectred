@@ -11,11 +11,11 @@ namespace Red.Core.Domain.Models
     public sealed class SwitchGamePrice
     {
         public float? CurrentPrice { get; init; }
-        public bool Discounted { get; init; } = false;
+        public bool Discounted { get; init; }
         public string Nsuid { get; }
         public float? RegularPrice { get; init; }
         public string? Currency { get; init; }
-        public EshopSalesStatus? SalesStatus { get; init; }
+        public EshopSalesStatus SalesStatus { get; init; }
 
         public SwitchGamePrice(string nsuid)
         {

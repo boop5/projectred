@@ -8,6 +8,19 @@ namespace Red.Core.Domain.Models
     {
         public string Country { get; init; } = "";
         public Price Price { get; init; } = new();
+
+        public static UndatedPriceRecord New(string country, float amount, string currency)
+        {
+            return new()
+            {
+                Country = country,
+                Price = new Price()
+                {
+                    Amount = amount,
+                    Currency = currency
+                }
+            };
+        }
     }
 
 

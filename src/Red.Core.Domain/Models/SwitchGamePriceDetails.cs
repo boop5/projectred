@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Red.Core.Domain.Models
 {
@@ -24,12 +24,17 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return History.SequenceEqual(other.History);
+            return OnDiscount == other.OnDiscount 
+                   && RegularPrice.Equals(other.RegularPrice) 
+                   && History.Equals(other.History) 
+                   && AllTimeLow.Equals(other.AllTimeLow) 
+                   && AllTimeHigh.Equals(other.AllTimeHigh) 
+                   && SalesStatus == other.SalesStatus;
         }
 
         public override int GetHashCode()
         {
-            return History.GetHashCode();
+            return HashCode.Combine(OnDiscount, RegularPrice, History, AllTimeLow, AllTimeHigh, (int) SalesStatus);
         }
     }
 }

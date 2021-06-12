@@ -1,25 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Red.Core.Domain.Models
 {
     public sealed class RegularPrice
     {
-        // private readonly List<UndatedPriceRecord> _records = new();
-        // public IReadOnlyCollection<UndatedPriceRecord> Records => _records.AsReadOnly();
-        public List<UndatedPriceRecord> _records { get; set; } = new();
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public List<UndatedPriceRecord> _records { get; init; } = new();
+
+        private UndatedPriceRecord? GetByCountry(string country)
+        {
+            return _records.SingleOrDefault(x => string.Equals(country, x.Country, StringComparison.InvariantCultureIgnoreCase));
+        }
 
         public UndatedPriceRecord? this[string country]
         {
-            get => _records.SingleOrDefault(x => string.Equals(country, x.Country, StringComparison.InvariantCultureIgnoreCase));
+            get => GetByCountry(country);
             set
             {
                 if (value != null)
                 {
+                    var existingRecord = GetByCountry(country);
+
+                    if (existingRecord != null)
+                    {
+                        _records.Remove(existingRecord);
+                    }
+                    
                     _records.Add(value);
                 }
             }
+        }
+
+        private bool Equals(RegularPrice other)
+        {
+            return _records.SequenceEqual(other._records);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return ReferenceEquals(this, obj) || obj is RegularPrice other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return _records.GetHashCode();
         }
     }
 }
