@@ -6,10 +6,11 @@ namespace Red.Core.Domain.Models
     public sealed record SwitchGamePriceDetails
     {
         public bool OnDiscount { get; init; }
+        public RegularPrice RegularPrice { get; init; } = new();
+        public List<DatedPriceRecord> History { get; init; } = new(0);
         public List<UndatedPriceRecord> AllTimeLow { get; init; } = new(0);
         public List<UndatedPriceRecord> AllTimeHigh { get; init; } = new(0);
-        public List<UndatedPriceRecord> RegularPrice { get; init; } = new(0);
-        public List<DatedPriceRecord> History { get; init; } = new(0);
+        public EshopSalesStatus SalesStatus { get; init; }
 
         public bool Equals(SwitchGamePriceDetails? other)
         {

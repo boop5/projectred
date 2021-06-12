@@ -7,26 +7,26 @@
         SalesTermination,
         Unreleased,
         PreOrder,
-        Unknown
+        Unknown = 0 // = 0 marks as default value
     }
 
     public enum EshopGameSorting
     {
         Title,
-        ReleaseDate
+        ReleaseDate = 0
 
         // todo: add more fields..
     }
 
     public enum SortingDirection
     {
-        Ascending,
+        Ascending = 0,
         Descending
     }
 
     public enum NintendoSystem
     {
-        NintendoSwitch,
+        NintendoSwitch = 0,
         NintendoWii,
         NintendoWiiU,
         NintendoDs,

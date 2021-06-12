@@ -17,5 +17,19 @@ namespace Red.Core.Domain.Models
         public string Country { get; init; } = "";
         public Price Price { get; init; } = new(); 
         public DateTime Date { get; init; }
+
+        public static DatedPriceRecord New(string country, float amount, string currency)
+        {
+            return new()
+            {
+                Country = country,
+                Date = DateTime.UtcNow,
+                Price = new Price()
+                {
+                    Amount = amount,
+                    Currency = currency
+                }
+            };
+        }
     }
 }

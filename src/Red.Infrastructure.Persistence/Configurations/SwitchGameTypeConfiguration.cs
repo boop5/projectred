@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Red.Core.Application.Json;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Persistence.Configurations
@@ -17,7 +18,14 @@ namespace Red.Infrastructure.Persistence.Configurations
             {
                 AllowTrailingCommas = false,
                 WriteIndented = false,
-                ReadCommentHandling = JsonCommentHandling.Skip
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                Converters =
+                {
+                    new EnumToStringJsonConverter<EshopSalesStatus>(),
+                    new EnumToStringJsonConverter<EshopGameSorting>(),
+                    new EnumToStringJsonConverter<SortingDirection>(),
+                    new EnumToStringJsonConverter<NintendoSystem>()
+                }
             };
 
             builder.HasKey(x => new {x.ProductCode, x.Region})
