@@ -30,7 +30,7 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override TimeSpan GetInitialDelay()
         {
-            return TimeSpan.FromMinutes(50);
+            return TimeSpan.FromMinutes(110);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

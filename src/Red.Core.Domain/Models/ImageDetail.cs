@@ -19,7 +19,8 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return Title == other.Title && Url == other.Url;
+            return string.Equals(Title, other.Title, StringComparison.InvariantCulture)
+                   && string.Equals(Url, other.Url, StringComparison.InvariantCulture);
         }
 
         public override int GetHashCode()

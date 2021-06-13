@@ -6,7 +6,8 @@ namespace Red.Core.Application.Interfaces
 {
     public interface ISwitchGameRepository : IRepository<SwitchGame>
     {
-        Task<SwitchGame> GetByProductCode(string productCode);
-        Task<SwitchGame> UpdateAsync(string productCode, Func<SwitchGame, SwitchGame> updateFunc);
+        Task<SwitchGame?> GetByProductCode(string productCode);
+        Task<SwitchGame?> GetByNsuid(string nsuid);
+        Task<SwitchGame?> UpdateAsync(string productCode, Func<SwitchGame, SwitchGame> updateFunc);
     }
 }

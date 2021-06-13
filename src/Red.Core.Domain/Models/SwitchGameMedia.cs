@@ -10,6 +10,8 @@ namespace Red.Core.Domain.Models
 
         /// <summary>uri to image.</summary>
         public ImageDetail? Cover { get; init; }
+        
+        public ImageDetail? HeroBanner { get; init; }
 
         /// <summary>List of uris.</summary>
         public List<ImageDetail> Screenshots { get; init; } = new List<ImageDetail>();
