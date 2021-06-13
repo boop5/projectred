@@ -5,7 +5,7 @@ using Red.Core.Application.Json;
 namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay("{FullQuery,nq}")]
-    internal sealed class LibrarySearchParameters
+    internal sealed class LibrarySearchParameters : ExtensionsObject
     {
         [JsonPropertyName("wt")]
         public string Format { get; init; } = "";

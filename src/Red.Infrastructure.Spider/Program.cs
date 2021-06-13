@@ -21,6 +21,7 @@ Host.CreateDefaultBuilder(args)
             services.AddHostedService<PriceSpider>();
             services.AddHostedService<LibrarySpider>();
             services.AddHostedService<ScreenshotSpider>();
+            services.AddHostedService<SalesSpider>();
         })
     .Build()
     .Run();

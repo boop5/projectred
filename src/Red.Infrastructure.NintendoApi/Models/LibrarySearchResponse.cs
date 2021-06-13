@@ -1,20 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Red.Core.Application.Json;
 
 namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay("{Games.Count,nq} Games")]
-    internal sealed class LibrarySearchResponse
+    internal sealed class LibrarySearchResponse : ExtensionsObject
     {
-        [JsonExtensionData]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public ReadOnlyDictionary<string, object> _extensionData { get; init; } 
-            = new(new Dictionary<string, object>());
-
         [JsonPropertyName("numFound")]
         [JsonConverter(typeof(IntJsonConverter))]
         public int FoundGames { get; init; }

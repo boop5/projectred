@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Models;
@@ -17,6 +18,27 @@ namespace Red.Infrastructure.NintendoApi
         {
             Log = log;
             _slugBuilder = slugBuilder;
+        }
+
+        public SwitchGameSale ConvertToGameSale(SalesSearchItem item)
+        {
+            int? uskRating = null;
+
+            if (string.Equals(item.RatingInfo?.RatingSystem?.Name, "USK", StringComparison.InvariantCultureIgnoreCase))
+            {
+                uskRating = item.RatingInfo?.Rating?.Age;
+            }
+
+            return new()
+            {
+                Screenshots = item.Screenshots.Select(x => new ImageDetail{Url = x}).ToList(),
+                Colors = item.DominantColors.Where(HexColor.IsValidCode).Select(x => new HexColor(x)).ToList(),
+                HeroBannerUrl = item.HeroBannerUrl,
+                IsNew = item.IsNew ?? false,
+                UskRating = uskRating,
+                Title = item.FormalName ?? "",
+                Nsuid = item.Nsuid ?? ""
+            };
         }
 
         public SwitchGame ConvertToSwitchGame(LibrarySearchGame game)

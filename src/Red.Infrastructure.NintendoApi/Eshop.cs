@@ -47,6 +47,19 @@ namespace Red.Infrastructure.NintendoApi
             return new List<SwitchGamePrice>();
         }
 
+        public async Task<IReadOnlyCollection<SwitchGameSale>> GetSales(EshopSalesQuery query)
+        {
+            var url = _urlBuilder.BuildSalesQueryUrl(query);
+            var response = await _http.GetAs<SalesSearchResult>(url);
+
+            if(response != null)
+            {
+                return response.Contents.Select(_converter.ConvertToGameSale).ToList();
+            }
+
+            return new List<SwitchGameSale>();
+        }
+
         public async Task<int> GetTotalGames()
         {
             var searchResult = await GetLibrary(new EshopGameQuery {Index = 0, Offset = 1});
@@ -54,6 +67,20 @@ namespace Red.Infrastructure.NintendoApi
             if (searchResult != null)
             {
                 return searchResult.Response.FoundGames;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> GetTotalSales()
+        {
+            var query = EshopSalesQuery.New("DE", "de", 0, 1);
+            var url = _urlBuilder.BuildSalesQueryUrl(query);
+            var response = await _http.GetAs<SalesSearchResult>(url);
+
+            if (response?.Total != null)
+            {
+                return (int) response.Total;
             }
 
             return 0;

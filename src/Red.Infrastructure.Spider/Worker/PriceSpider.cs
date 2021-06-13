@@ -28,7 +28,7 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override TimeSpan GetInitialDelay()
         {
-            return TimeSpan.FromMinutes(0);
+            return TimeSpan.FromMinutes(99);
         }
 
         protected override TimeSpan GetTaskInterval()

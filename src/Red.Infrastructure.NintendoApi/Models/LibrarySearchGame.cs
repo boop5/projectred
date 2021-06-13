@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -13,13 +12,8 @@ namespace Red.Infrastructure.NintendoApi.Models
         "{Title,nq}",
         Name = "{Nsuid != null ? \"[\" + Nsuid + \"]\" : \"[NSUID UNKNOWN]\",nq}",
         Type = "Nintendo eShop Game")]
-    internal sealed class LibrarySearchGame
+    internal sealed class LibrarySearchGame : ExtensionsObject
     {
-        [JsonExtensionData]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public ReadOnlyDictionary<string, object> _extensionData { get; init; }
-            = new(new Dictionary<string, object>());
-
         /// <summary>
         ///     Internal eShop version
         /// </summary>

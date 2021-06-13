@@ -9,7 +9,7 @@ namespace Red.Infrastructure.NintendoApi.Models
         "{DiscountPrice != null ? \" [DISCOUNT] \" + DiscountPrice.Amount : System.String.Empty,nq}" +
         "{SalesStatus != \"onsale\" ? \" [STATUS] \" + SalesStatus : System.String.Empty,nq}",
         Name = "[{Nsuid,nq}]", Type = "Nintendo eShop Game Price")]
-    internal sealed class PriceSearchItem
+    internal sealed class PriceSearchItem : ExtensionsObject
     {
         [JsonPropertyName("discount_price")]
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]

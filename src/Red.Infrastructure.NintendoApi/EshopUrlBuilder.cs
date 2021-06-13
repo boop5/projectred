@@ -5,7 +5,6 @@ using Red.Infrastructure.NintendoApi.Util;
 
 namespace Red.Infrastructure.NintendoApi
 {
-    // todo: games on sale query            https://ec.nintendo.com/api/DE/de/search/sales?count=10&offset=0
     // todo: new games query                https://ec.nintendo.com/api/DE/de/search/new?count=30&offset=0
     // todo: download ranking query         https://ec.nintendo.com/api/DE/de/search/ranking?count=10&offset=0
     // source: https://github.com/cutecore/Nintendo-Switch-eShop-API
@@ -21,6 +20,14 @@ namespace Red.Infrastructure.NintendoApi
         public EshopUrlBuilder(IAppLogger<EshopUrlBuilder> log)
         {
             Log = log;
+        }
+
+        public string BuildSalesQueryUrl(EshopSalesQuery query)
+        {
+            var baseUrl = "https://ec.nintendo.com/api";
+            var url = $"{baseUrl}/{query.Country}/{query.Locale}/search/sales?count={query.Count}&offset={query.Offset}";
+
+            return url;
         }
 
         public string BuildGameQueryUrl(EshopGameQuery query)

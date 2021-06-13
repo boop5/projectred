@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Red.Infrastructure.NintendoApi.Models
 {
     [DebuggerDisplay("{Amount,nq}", Type = "Discount")]
-    internal sealed class PriceSearchDiscount
+    internal sealed class PriceSearchDiscount : ExtensionsObject
     {
         [JsonPropertyName("amount")]
         public string? Amount { get; init; }
