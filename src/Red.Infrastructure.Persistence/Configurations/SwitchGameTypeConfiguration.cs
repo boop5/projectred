@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -15,6 +16,7 @@ namespace Red.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<SwitchGame> builder)
         {
             var serializerOptions = AppJsonOptions.Default;
+
 
             builder.HasKey(x => new {x.ProductCode, x.Region})
                    .HasName("PK_SwitchGame_ProductCodeRegion");
@@ -69,6 +71,27 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
                        x => JsonSerializer.Deserialize<SwitchGamePriceDetails>(x, serializerOptions)!);
+
+            builder.Property(x => x.Colors)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x.Select(y => y.HexCode), serializerOptions),
+                       x => DeserializeColors(x, serializerOptions));
+            builder.Property(x => x.Colors)
+                   .Metadata
+                   .SetValueComparer(BuildValueComparer<HexColor>());
+        }
+
+        private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)
+        {
+            var deserialized = JsonSerializer.Deserialize<List<string>?>(json, serializerOptions);
+
+            if (deserialized == null)
+            {
+                return new List<HexColor>();
+            }
+
+            var colors = deserialized.Select(x => new HexColor(x)).ToList();
+            return colors;
         }
 
         private static ValueComparer<List<T>?> BuildValueComparer<T>()

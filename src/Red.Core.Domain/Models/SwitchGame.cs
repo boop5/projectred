@@ -12,6 +12,7 @@ namespace Red.Core.Domain.Models
         public List<string> Categories { get; init; } = new(0);
         public List<string> Languages { get; init; } = new(0);
         public List<string> Nsuids { get; init; } = new(0);
+        public List<HexColor> Colors { get; init; } = new(0);
 
         public SwitchGameMedia Media { get; init; } = new();
         public SwitchGamePlayModes PlayModes { get; init; } = new();

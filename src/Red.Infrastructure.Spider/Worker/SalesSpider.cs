@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
@@ -12,12 +13,20 @@ namespace Red.Infrastructure.Spider.Worker
     public class SalesSpider : TimedWorker
     {
         private readonly IEshop _eshop;
+        private readonly IServiceProvider _serviceProvider;
 
         public SalesSpider(IAppLogger<SalesSpider> log,
-                           IEshop eshop) 
+                           IServiceProvider serviceProvider,
+                           IEshop eshop)
             : base(log)
         {
+            _serviceProvider = serviceProvider;
             _eshop = eshop;
+        }
+
+        protected override TimeSpan GetTaskInterval()
+        {
+            return TimeSpan.FromMinutes(5);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
@@ -29,37 +38,32 @@ namespace Red.Infrastructure.Spider.Worker
             var maxPerChunk = 30;
             var totalSales = await _eshop.GetTotalSales();
 
-            var html = "<html><head><style>html{background-color:#fff;color:#000}@media (prefers-color-scheme:dark){html{background-color:#0e0e0e;color:#fff}}div .container{margin-bottom:40px}div .item{height:80px;width:80px;margin-bottom:40px}ul{list-style-type:none;margin:0;padding:0;overflow:hidden}li{float:left;margin-right:8px}</style></head><body>";
-
             for (var i = 0; i < totalSales; i += maxPerChunk)
             {
-                var query = EshopSalesQuery.New(country, locale, start: i, count: maxPerChunk);
-
+                var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+                var query = EshopSalesQuery.New(country, locale, i, maxPerChunk);
                 var response = await _eshop.GetSales(query);
 
                 foreach (var sale in response)
                 {
-                    html += $"<div class=container><p>{sale.Title} [{sale.Nsuid}]</p><ul>";
+                    // todo: take care of region
+                    var entities = await repo.Get().Select(x => new {x.Nsuids, x.ProductCode, x.Colors}).ToListAsync(stoppingToken);
+                    entities = entities.Where(x => x.Nsuids.Contains(sale.Nsuid)).ToList();
 
-                    foreach (var color in sale.Colors)
+                    if (entities.Count != 1)
                     {
-                        html += $"<li><div class=item style='background-color:{color.HexCode}'>{color.HexCode}</div></li>";
+                        continue;
                     }
 
-                    html += "</ul></div>";
+                    var entity = entities[0];
+                    if (!entity.Colors.Equals(sale.Colors))
+                    {
+                        Log.LogInformation("Update colors for {game} [{nsuid}]", sale.Title, sale.Nsuid);
+
+                        await repo.UpdateAsync(entity.ProductCode, x => x with {Colors = sale.Colors});
+                    }
                 }
             }
-
-            html += "</body></html>";
-
-            await System.IO.File.WriteAllTextAsync($"c:\\temp\\{DateTime.Now:HHmmss}.html", html);
-
-            ;
-        }
-
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromMinutes(5);
         }
     }
 }
