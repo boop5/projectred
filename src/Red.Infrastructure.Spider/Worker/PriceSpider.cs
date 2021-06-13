@@ -36,7 +36,6 @@ namespace Red.Infrastructure.Spider.Worker
             return TimeSpan.FromMinutes(5);
         }
 
-
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
@@ -85,14 +84,8 @@ namespace Red.Infrastructure.Spider.Worker
             // todo: use actual country
             string country = "DE";
             var entity = await repo.GetByProductCode(game.ProductCode);
-            var lastPrice = game.Price.History.OrderBy(x => x.Date).LastOrDefault(x => x.Country == country);
-            var ctx = new UpdateContext
-            {
-                Game = game,
-                Price = price,
-                Country = country,
-                LastPrice = lastPrice
-            };
+            var lastPrice = game.Price.History[country]?.OrderBy(x => x.Date).LastOrDefault();
+            var ctx = UpdateContext.New(country, game, lastPrice, price);
 
             var updatedPrice = entity.Price with { };
             updatedPrice = UpdateRegularPrice(ctx, updatedPrice);
@@ -102,7 +95,7 @@ namespace Red.Infrastructure.Spider.Worker
             updatedPrice = UpdateAllTimeLow(ctx, updatedPrice);
             updatedPrice = UpdateAllTimeHigh(ctx, updatedPrice);
 
-            var updatedEntity = entity with {Price = updatedPrice};
+            var updatedEntity = entity with { Price = updatedPrice };
             if (!entity.Price.Equals(updatedEntity.Price))
             {
                 Log.LogInformation("Update price for {title} ({productCode})", game.Title ?? "", game.ProductCode);
@@ -114,10 +107,23 @@ namespace Red.Infrastructure.Spider.Worker
 
         private sealed record UpdateContext
         {
-            public string Country { get; init; }
-            public SwitchGame Game { get; init; }
-            public DatedPriceRecord? LastPrice { get; init; }
-            public SwitchGamePrice Price { get; init; }
+#pragma warning disable CS8618
+            public string Country { get; private init; }
+            public SwitchGame Game { get; private init; }
+            public DatedPrice? LastPrice { get; private init; }
+            public SwitchGamePrice Price { get; private init; }
+#pragma warning restore CS8618
+
+            public static UpdateContext New(string country, SwitchGame game, DatedPrice? lastPrice, SwitchGamePrice price)
+            {
+                return new()
+                {
+                    Country = country ?? throw new Exception(),
+                    Game = game ?? throw new Exception(),
+                    LastPrice = lastPrice,
+                    Price = price ?? throw new Exception()
+                };
+            }
         }
 
         private static SwitchGamePriceDetails InitializeHistory(UpdateContext ctx, SwitchGamePriceDetails details)
@@ -125,15 +131,14 @@ namespace Red.Infrastructure.Spider.Worker
             if (!ctx.Price.Discounted && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
             {
                 if (ctx.LastPrice == null || ctx.Price.RegularPrice.HasValue
-                    && ctx.LastPrice.Price.Amount - ctx.Price.RegularPrice < 0.01)
+                    && ctx.LastPrice.Amount - ctx.Price.RegularPrice < 0.01)
                 {
-                    var history = ctx.Game.Price.History.ToList();
-                    history.Add(DatedPriceRecord.New(ctx.Country, ctx.Price.RegularPrice!.Value, ctx.Price.Currency!));
+                    var history = details.History with { };
+                    var localHistory = history[ctx.Country] ?? new List<DatedPrice>();
+                    localHistory.Add(DatedPrice.New(ctx.Price.RegularPrice!.Value, ctx.Price.Currency!));
+                    history[ctx.Country] = localHistory.Distinct().ToList();
 
-                    return details with
-                    {
-                        History = history
-                    };
+                    return details with { History = history };
                 }
             }
 
@@ -147,18 +152,15 @@ namespace Red.Infrastructure.Spider.Worker
                 return details;
             }
 
-            var ath = details.AllTimeHigh.SingleOrDefault(x => x.Country == ctx.Country);
+            var ath = details.AllTimeHigh with { };
+            var localAth = ath[ctx.Country];
             var highestPrice = Math.Max(ctx.Price.CurrentPrice ?? int.MinValue, ctx.Price.RegularPrice.Value);
 
-            if (ath == null || ath.Price.Amount < highestPrice)
+            if (localAth == null || Math.Abs(localAth.Amount - highestPrice) < 0.01)
             {
-                var newAtl = details.AllTimeHigh.ToList();
-                newAtl.Add(UndatedPriceRecord.New(ctx.Country, highestPrice, ctx.Price.Currency));
+                ath[ctx.Country] = Price.New(highestPrice, ctx.Price.Currency);
 
-                return details with
-                {
-                    AllTimeHigh = newAtl
-                };
+                return details with { AllTimeHigh = ath };
             }
 
             return details;
@@ -171,18 +173,15 @@ namespace Red.Infrastructure.Spider.Worker
                 return details;
             }
 
-            var atl = details.AllTimeLow.SingleOrDefault(x => x.Country == ctx.Country);
+            var atl = details.AllTimeLow with { };
+            var localAtl = atl[ctx.Country];
             var lowestPrice = Math.Min(ctx.Price.CurrentPrice ?? int.MaxValue, ctx.Price.RegularPrice.Value);
 
-            if (atl == null || atl.Price.Amount > lowestPrice)
+            if (localAtl == null || Math.Abs(localAtl.Amount - lowestPrice) >= 0.01)
             {
-                var newAtl = details.AllTimeLow.ToList();
-                newAtl.Add(UndatedPriceRecord.New(ctx.Country, lowestPrice, ctx.Price.Currency));
+                atl[ctx.Country] = Price.New(lowestPrice, ctx.Price.Currency);
 
-                return details with
-                {
-                    AllTimeLow = newAtl
-                };
+                return details with { AllTimeHigh = atl };
             }
 
             return details;
@@ -190,13 +189,15 @@ namespace Red.Infrastructure.Spider.Worker
 
         private static SwitchGamePriceDetails UpdateDiscount(UpdateContext ctx, SwitchGamePriceDetails details)
         {
+            details = details with { OnDiscount = ctx.Price.Discounted };
+
             if (ctx.Price.Discounted && ctx.Price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
             {
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (ctx.LastPrice == null || ctx.LastPrice.Price.Amount != ctx.Price.CurrentPrice)
+                if (ctx.LastPrice == null || Math.Abs(ctx.LastPrice.Amount - (float)ctx.Price.CurrentPrice) >= 0.01)
                 {
-                    var history = ctx.Game.Price.History.ToList();
-                    history.Add(DatedPriceRecord.New(ctx.Country, ctx.Price.CurrentPrice!.Value, ctx.Price.Currency!));
+                    var history = ctx.Game.Price.History with { };
+                    history[ctx.Country] ??= new List<DatedPrice>();
+                    history[ctx.Country]!.Add(DatedPrice.New(ctx.Price.CurrentPrice!.Value, ctx.Price.Currency));
 
                     return details with
                     {
@@ -212,15 +213,13 @@ namespace Red.Infrastructure.Spider.Worker
         {
             if (ctx.Price.RegularPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
             {
-                var rp = ctx.Game.Price.RegularPrice;
-                rp[ctx.Country] = UndatedPriceRecord.New(ctx.Country, ctx.Price.RegularPrice.Value, ctx.Price.Currency);
+                var rp = ctx.Game.Price.RegularPrice with { };
+                rp[ctx.Country] = Price.New(ctx.Price.RegularPrice.Value, ctx.Price.Currency);
 
-                if (!details.RegularPrice.Equals(rp))
+                if (details.RegularPrice[ctx.Country] == null
+                    || !details.RegularPrice[ctx.Country]!.Equals(rp[ctx.Country]))
                 {
-                    return details with
-                    {
-                        RegularPrice = rp
-                    };
+                    return details with { RegularPrice = rp };
                 }
             }
 
@@ -241,5 +240,6 @@ namespace Red.Infrastructure.Spider.Worker
         }
 
         #endregion
+
     }
 }

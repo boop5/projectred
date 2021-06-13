@@ -3,25 +3,30 @@ using System.Diagnostics;
 
 namespace Red.Core.Domain.Models
 {
-    [DebuggerDisplay("{Amount} {Currency}")]
-    public sealed record Price
+    [DebuggerDisplay("{Date:d,nq} {Amount, nq} {Currency, nq}", Type = "DatedPriceRecord")]
+    public sealed record DatedPrice
     {
         public float Amount { get; init; }
         public string Currency { get; init; } = "";
+        public DateTime Date { get; init; } = DateTime.UtcNow;
 
-        public static Price New(float amount, string currency)
+        public static DatedPrice New(float amount, string currency)
         {
             if (string.IsNullOrWhiteSpace(currency))
             {
                 throw new ArgumentException();
             }
 
-            return new Price() {Amount = amount, Currency = currency};
+            return new DatedPrice()
+            {
+                Amount = amount,
+                Currency = currency
+            };
         }
 
         #region Equality
 
-        public bool Equals(Price? other)
+        public bool Equals(DatedPrice? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -33,13 +38,12 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return Amount - other.Amount < 0.01
-                   && string.Equals(Currency, other.Currency, StringComparison.InvariantCultureIgnoreCase);
+            return Date.Equals(other.Date) && Amount.Equals(other.Amount) && Currency == other.Currency;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Amount, Currency);
+            return HashCode.Combine(Date, Amount, Currency);
         }
 
         #endregion

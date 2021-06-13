@@ -14,19 +14,7 @@ namespace Red.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<SwitchGame> builder)
         {
-            var serializerOptions = new JsonSerializerOptions
-            {
-                AllowTrailingCommas = false,
-                WriteIndented = false,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                Converters =
-                {
-                    new EnumToStringJsonConverter<EshopSalesStatus>(),
-                    new EnumToStringJsonConverter<EshopGameSorting>(),
-                    new EnumToStringJsonConverter<SortingDirection>(),
-                    new EnumToStringJsonConverter<NintendoSystem>()
-                }
-            };
+            var serializerOptions = AppJsonOptions.Default;
 
             builder.HasKey(x => new {x.ProductCode, x.Region})
                    .HasName("PK_SwitchGame_ProductCodeRegion");

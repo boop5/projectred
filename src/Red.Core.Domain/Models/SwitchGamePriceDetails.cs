@@ -5,11 +5,11 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGamePriceDetails
     {
+        public CountryDictionary<Price> AllTimeHigh { get; init; } = new();
+        public CountryDictionary<Price> AllTimeLow { get; init; } = new();
+        public CountryDictionary<List<DatedPrice>> History { get; init; } = new();
         public bool OnDiscount { get; init; }
-        public RegularPrice RegularPrice { get; init; } = new();
-        public List<DatedPriceRecord> History { get; init; } = new(0);
-        public List<UndatedPriceRecord> AllTimeLow { get; init; } = new(0);
-        public List<UndatedPriceRecord> AllTimeHigh { get; init; } = new(0);
+        public CountryDictionary<Price> RegularPrice { get; init; } = new();
         public EshopSalesStatus SalesStatus { get; init; }
 
         public bool Equals(SwitchGamePriceDetails? other)
@@ -24,17 +24,22 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return OnDiscount == other.OnDiscount 
-                   && RegularPrice.Equals(other.RegularPrice) 
-                   && History.Equals(other.History) 
+            return AllTimeHigh.Equals(other.AllTimeHigh) 
                    && AllTimeLow.Equals(other.AllTimeLow) 
-                   && AllTimeHigh.Equals(other.AllTimeHigh) 
+                   && History.Equals(other.History)
+                   && OnDiscount == other.OnDiscount 
+                   && RegularPrice.Equals(other.RegularPrice) 
                    && SalesStatus == other.SalesStatus;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(OnDiscount, RegularPrice, History, AllTimeLow, AllTimeHigh, (int) SalesStatus);
+            return HashCode.Combine(AllTimeHigh, 
+                                    AllTimeLow, 
+                                    History,
+                                    OnDiscount, 
+                                    RegularPrice, 
+                                    (int) SalesStatus);
         }
     }
 }

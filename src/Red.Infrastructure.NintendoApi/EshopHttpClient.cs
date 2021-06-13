@@ -5,13 +5,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Red.Core.Application.Interfaces;
 using Red.Core.Application.Json;
-using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.NintendoApi
 {
     internal sealed class EshopHttpClient : HttpClient
     {
-        private readonly JsonSerializerOptions _serialzerOptions;
+        private readonly JsonSerializerOptions _serializerOptions;
         private IAppLogger<EshopHttpClient> Log { get; }
 
         public EshopHttpClient(IAppLogger<EshopHttpClient> log)
@@ -20,18 +19,7 @@ namespace Red.Infrastructure.NintendoApi
             Log = log;
             Timeout = TimeSpan.FromSeconds(120);
             DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            // todo: put config at global location?? like IJsonSerializerOptionsBuilder.BuildRedDefault() OR SerializerOptions.Default as static
-            _serialzerOptions = new JsonSerializerOptions()
-            {
-                Converters =
-                {
-                    new EnumToStringJsonConverter<EshopSalesStatus>(),
-                    new EnumToStringJsonConverter<EshopGameSorting>(),
-                    new EnumToStringJsonConverter<SortingDirection>(),
-                    new EnumToStringJsonConverter<NintendoSystem>()
-                },
-                WriteIndented = false
-            };
+            _serializerOptions = AppJsonOptions.Default;
         }
 
         public async Task<T?> GetAs<T>(string url) where T : class
@@ -42,7 +30,7 @@ namespace Red.Infrastructure.NintendoApi
             {
                 try
                 {
-                    return JsonSerializer.Deserialize<T>(response, _serialzerOptions);
+                    return JsonSerializer.Deserialize<T>(response, _serializerOptions);
                 }
                 catch (Exception e)
                 {
