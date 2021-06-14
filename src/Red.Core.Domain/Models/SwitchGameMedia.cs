@@ -6,16 +6,13 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGameMedia
     {
-        public DateTime? LastUpdated { get; init; }
-
-        /// <summary>uri to image.</summary>
         public ImageDetail? Cover { get; init; }
-        
         public ImageDetail? HeroBanner { get; init; }
+        public DateTime? LastUpdated { get; init; }
+        public List<ImageDetail> Screenshots { get; init; } = new();
+        public List<VideoDetail> Videos { get; init; } = new();
 
-        /// <summary>List of uris.</summary>
-        public List<ImageDetail> Screenshots { get; init; } = new List<ImageDetail>();
-        public List<VideoDetail> Videos { get; init; } = new List<VideoDetail>();
+        #region Equality
 
         public bool Equals(SwitchGameMedia? other)
         {
@@ -31,13 +28,16 @@ namespace Red.Core.Domain.Models
 
             return Screenshots.SequenceEqual(other.Screenshots)
                    && Videos.SequenceEqual(other.Videos)
+                   && Equals(HeroBanner, other.HeroBanner)
                    && Cover == other.Cover
                    && Nullable.Equals(LastUpdated, other.LastUpdated);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Screenshots, Videos, Cover, LastUpdated);
+            return HashCode.Combine(Screenshots, Videos, Cover, LastUpdated, HeroBanner);
         }
+
+        #endregion
     }
 }

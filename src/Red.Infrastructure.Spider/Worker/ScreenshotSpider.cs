@@ -189,7 +189,7 @@ namespace Red.Infrastructure.Spider.Worker
                                 .Select(x => JsonSerializer.Deserialize<Playlist>(x))
                                 .Where(x => x != null)
                                 .SelectMany(x => x.mediaList)
-                                .Where(x => x.mobileUrls.Any(x => x.targetMediaPlatform == "MobileH264"))
+                                .Where(x => x.mobileUrls.Any(y => y.targetMediaPlatform == "MobileH264"))
                                 .Select(
                                     x =>
                                         new VideoDetail
@@ -236,7 +236,8 @@ namespace Red.Infrastructure.Spider.Worker
             public int durationInMilliseconds { get; } = 0;
             public List<string> flags { get; init; } = new();
             public string mediaId { get; init; } = "";
-            public List<mobileUrlItem> mobileUrls { get; } = new();
+            // ReSharper disable once CollectionNeverUpdated.Local
+            public List<mobileUrlItem> mobileUrls { get; init; } = new();
             public int positionInChannel { get; init; } = 0;
             public string previewImageUrl { get; } = "";
             public string thumbnailImageUrl { get; init; } = "";
@@ -251,6 +252,7 @@ namespace Red.Infrastructure.Spider.Worker
 
         private class Playlist
         {
+            // ReSharper disable once CollectionNeverUpdated.Local
             public List<MediaListItem> mediaList { get; init; } = new();
             public string orgId { get; init; } = "";
         }

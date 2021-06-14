@@ -22,7 +22,7 @@ namespace Red.Core.Domain.Models
 
             private bool Equals(Country other)
             {
-                return Name == other.Name;
+                return string.Equals(Name, other.Name, StringComparison.InvariantCultureIgnoreCase);
             }
 
             public override bool Equals(object? obj)
@@ -36,11 +36,11 @@ namespace Red.Core.Domain.Models
             }
         }
 
-        private readonly IDictionary<Country, T> _dictionary = new Dictionary<Country, T>();
+        private IDictionary<Country, T> Dictionary { get; init; } = new Dictionary<Country, T>();
 
-        public IReadOnlyCollection<string> Keys => _dictionary.Keys.Select(x => x.Name).ToList();
+        public IReadOnlyCollection<string> Keys => Dictionary.Keys.Select(x => x.Name).ToList();
 
-        public IReadOnlyDictionary<string, T> ToDictionary() => _dictionary.ToDictionary(x => x.Key.Name, x => x.Value);
+        public IReadOnlyDictionary<string, T> ToDictionary() => Dictionary.ToDictionary(x => x.Key.Name, x => x.Value);
 
         public T? this[string country]
         {
@@ -51,23 +51,30 @@ namespace Red.Core.Domain.Models
                     return default;
                 }
 
-                var key = _dictionary.Keys.SingleOrDefault(x => string.Equals(country, x.Name, StringComparison.InvariantCultureIgnoreCase));
+                var key = Dictionary.Keys.SingleOrDefault(x => string.Equals(country, x.Name, StringComparison.InvariantCultureIgnoreCase));
 
                 if (key == null)
                 {
                     return default;
                 }
 
-                return _dictionary[key];
+                return Dictionary[key];
             }
             set
             {
                 if (!string.IsNullOrWhiteSpace(country) && value != null)
                 {
                     var key = Country.New(country);
-                    _dictionary[key] = value;
+                    Dictionary[key] = value;
                 }
             }
+        }
+
+        public static CountryDictionary<T> New(IReadOnlyDictionary<string, T> dictionary)
+        {
+            var newDictionary = dictionary
+                .ToDictionary(x => Country.New(x.Key), x => x.Value);
+            return new() {Dictionary = newDictionary};
         }
 
         #region Equality
@@ -84,12 +91,17 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return _dictionary.Equals(other._dictionary);
+            if (Dictionary.Count != other.Dictionary.Count)
+            {
+                return false;
+            }
+
+            return !Dictionary.Except(other.Dictionary).Any();
         }
 
         public override int GetHashCode()
         {
-            return _dictionary.GetHashCode();
+            return Dictionary.GetHashCode();
         }
 
         #endregion

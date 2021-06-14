@@ -34,7 +34,7 @@ namespace Red.Infrastructure.NintendoApi
                 }
                 catch (Exception e)
                 {
-                    Log.LogWarning(e, "Failed to deserialize response as {type}", typeof(T).FullName);
+                    Log.LogWarning(e, "Failed to deserialize response as {type}", typeof(T).FullName ?? typeof(T).Name);
                 }
             }
 

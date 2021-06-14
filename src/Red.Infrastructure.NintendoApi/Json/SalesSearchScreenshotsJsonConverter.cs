@@ -7,7 +7,7 @@ namespace Red.Infrastructure.NintendoApi.Json
 {
     internal sealed class SalesSearchScreenshotsJsonConverter : JsonConverter<List<string>>
     {
-        public override List<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override List<string> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var result = new List<string>();
 
@@ -23,32 +23,61 @@ namespace Red.Infrastructure.NintendoApi.Json
                     break;
                 }
 
-                if (reader.TokenType != JsonTokenType.StartObject) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.PropertyName) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.StartArray) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.StartArray)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.StartObject) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.PropertyName) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.String) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.String)
+                {
+                    throw new JsonException();
+                }
+
                 var s = reader.GetString();
                 if (!string.IsNullOrWhiteSpace(s))
                 {
                     result.Add(s);
                 }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.EndObject) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.EndObject)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
-                if (reader.TokenType != JsonTokenType.EndArray) throw new JsonException();
+                if (reader.TokenType != JsonTokenType.EndArray)
+                {
+                    throw new JsonException();
+                }
+
                 reader.Read();
             }
-
-            //reader.Read();
-            //if (reader.TokenType != JsonTokenType.EndObject) throw new JsonException();
-
 
             return result;
         }

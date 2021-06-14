@@ -10,6 +10,6 @@ namespace Red.Core.Domain.Models
         public string Nsuid { get; init; } = "";
         public bool IsNew { get; init; }
         public string? HeroBannerUrl { get; init; }
-        public int? UskRating { get; init; }
+        public ContentRating ContentRating { get; init; } = new();
     }
 }

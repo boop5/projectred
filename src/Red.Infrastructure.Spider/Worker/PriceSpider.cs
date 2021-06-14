@@ -83,7 +83,7 @@ namespace Red.Infrastructure.Spider.Worker
         {
             // todo: use actual country
             string country = "DE";
-            var entity = await repo.GetByProductCode(game.ProductCode);
+            var entity = (await repo.GetByProductCode(game.ProductCode))!;
             var lastPrice = game.Price.History[country]?.OrderBy(x => x.Date).LastOrDefault();
             var ctx = UpdateContext.New(country, game, lastPrice, price);
 
@@ -95,7 +95,7 @@ namespace Red.Infrastructure.Spider.Worker
             updatedPrice = UpdateAllTimeLow(ctx, updatedPrice);
             updatedPrice = UpdateAllTimeHigh(ctx, updatedPrice);
 
-            var updatedEntity = entity with { Price = updatedPrice };
+            var updatedEntity = entity with {Price = updatedPrice};
             if (!entity.Price.Equals(updatedEntity.Price))
             {
                 Log.LogInformation("Update price for {title} ({productCode})", game.Title ?? "", game.ProductCode);
@@ -107,13 +107,6 @@ namespace Red.Infrastructure.Spider.Worker
 
         private sealed record UpdateContext
         {
-#pragma warning disable CS8618
-            public string Country { get; private init; }
-            public SwitchGame Game { get; private init; }
-            public DatedPrice? LastPrice { get; private init; }
-            public SwitchGamePrice Price { get; private init; }
-#pragma warning restore CS8618
-
             public static UpdateContext New(string country, SwitchGame game, DatedPrice? lastPrice, SwitchGamePrice price)
             {
                 return new()
@@ -124,6 +117,14 @@ namespace Red.Infrastructure.Spider.Worker
                     Price = price ?? throw new Exception()
                 };
             }
+
+            #pragma warning disable CS8618
+            private UpdateContext() { }
+            public string Country { get; private init; }
+            public SwitchGame Game { get; private init; }
+            public DatedPrice? LastPrice { get; private init; }
+            public SwitchGamePrice Price { get; private init; }
+            #pragma warning restore CS8618
         }
 
         private static SwitchGamePriceDetails InitializeHistory(UpdateContext ctx, SwitchGamePriceDetails details)
@@ -138,7 +139,7 @@ namespace Red.Infrastructure.Spider.Worker
                     localHistory.Add(DatedPrice.New(ctx.Price.RegularPrice!.Value, ctx.Price.Currency!));
                     history[ctx.Country] = localHistory.Distinct().ToList();
 
-                    return details with { History = history };
+                    return details with {History = history};
                 }
             }
 
@@ -160,7 +161,7 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 ath[ctx.Country] = Price.New(highestPrice, ctx.Price.Currency);
 
-                return details with { AllTimeHigh = ath };
+                return details with {AllTimeHigh = ath};
             }
 
             return details;
@@ -181,7 +182,7 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 atl[ctx.Country] = Price.New(lowestPrice, ctx.Price.Currency);
 
-                return details with { AllTimeHigh = atl };
+                return details with {AllTimeHigh = atl};
             }
 
             return details;
@@ -189,11 +190,11 @@ namespace Red.Infrastructure.Spider.Worker
 
         private static SwitchGamePriceDetails UpdateDiscount(UpdateContext ctx, SwitchGamePriceDetails details)
         {
-            details = details with { OnDiscount = ctx.Price.Discounted };
+            details = details with {OnDiscount = ctx.Price.Discounted};
 
             if (ctx.Price.Discounted && ctx.Price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
             {
-                if (ctx.LastPrice == null || Math.Abs(ctx.LastPrice.Amount - (float)ctx.Price.CurrentPrice) >= 0.01)
+                if (ctx.LastPrice == null || Math.Abs(ctx.LastPrice.Amount - (float) ctx.Price.CurrentPrice) >= 0.01)
                 {
                     var history = ctx.Game.Price.History with { };
                     history[ctx.Country] ??= new List<DatedPrice>();
@@ -219,7 +220,7 @@ namespace Red.Infrastructure.Spider.Worker
                 if (details.RegularPrice[ctx.Country] == null
                     || !details.RegularPrice[ctx.Country]!.Equals(rp[ctx.Country]))
                 {
-                    return details with { RegularPrice = rp };
+                    return details with {RegularPrice = rp};
                 }
             }
 
@@ -240,6 +241,5 @@ namespace Red.Infrastructure.Spider.Worker
         }
 
         #endregion
-
     }
 }

@@ -22,22 +22,9 @@ namespace Red.Infrastructure.Spider.Worker
             _eshop = eshop;
         }
 
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromMinutes(5);
-        }
-
         protected override TimeSpan GetInitialDelay()
         {
             return TimeSpan.FromMinutes(0);
-        }
-
-        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
-        {
-            var queries = await GetQueries();
-            var tasks = queries.Select(ProcessQuery);
-
-            await Task.WhenAll(tasks);
         }
 
         private async Task<IReadOnlyCollection<EshopSalesQuery>> GetQueries()
@@ -59,6 +46,19 @@ namespace Red.Infrastructure.Spider.Worker
             return queries;
         }
 
+        protected override TimeSpan GetTaskInterval()
+        {
+            return TimeSpan.FromMinutes(5);
+        }
+
+        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
+        {
+            var queries = await GetQueries();
+            var tasks = queries.Select(ProcessQuery);
+
+            await Task.WhenAll(tasks);
+        }
+
         private async Task ProcessQuery(EshopSalesQuery query)
         {
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
@@ -77,27 +77,34 @@ namespace Red.Infrastructure.Spider.Worker
                 var updatedEntity = entity with { };
                 updatedEntity = UpdateColors(updatedEntity, sale);
                 updatedEntity = UpdateHeroBanner(updatedEntity, sale);
-                updatedEntity = UpdateAgeRating(updatedEntity, sale);
+                updatedEntity = UpdateContentRating(updatedEntity, sale, query);
 
                 if (!entity.Equals(updatedEntity))
                 {
-                    Log.LogInformation("Update {game}", sale.Title);
-                    await repo.UpdateAsync(entity);
+                    Log.LogInformation("Update {game} [{productCode}]", sale.Title, entity.ProductCode);
+                    await repo.UpdateAsync(updatedEntity);
                 }
             }
         }
 
-        private SwitchGame UpdateAgeRating(SwitchGame entity, SwitchGameSale sale)
+        private SwitchGame UpdateColors(SwitchGame entity, SwitchGameSale sale)
         {
-            // todo: gotta save age rating per country. USK is a german rating, other countries have other ratings.....
-            return entity;
-
-            if (sale.UskRating.HasValue && !Nullable.Equals(entity.AgeRating, sale.UskRating))
+            if (!entity.Colors.SequenceEqual(sale.Colors))
             {
-                return entity with
-                {
-                    AgeRating = sale.UskRating
-                };
+                return entity with {Colors = sale.Colors};
+            }
+
+            return entity;
+        }
+
+        private SwitchGame UpdateContentRating(SwitchGame entity, SwitchGameSale sale, EshopSalesQuery query)
+        {
+            if (entity.ContentRating[query.Country]?.Equals(sale.ContentRating) == false)
+            {
+                var newContentRating = entity.ContentRating.ToDictionary().ToDictionary(x => x.Key, x => x.Value);
+                newContentRating[query.Country] = sale.ContentRating;
+
+                return entity with {ContentRating = CountryDictionary<ContentRating>.New(newContentRating)};
             }
 
             return entity;
@@ -105,29 +112,19 @@ namespace Red.Infrastructure.Spider.Worker
 
         private SwitchGame UpdateHeroBanner(SwitchGame entity, SwitchGameSale sale)
         {
-            if (!string.IsNullOrWhiteSpace(sale.HeroBannerUrl) 
+            if (!string.IsNullOrWhiteSpace(sale.HeroBannerUrl)
                 && !string.Equals(entity.Media.HeroBanner?.Url, sale.HeroBannerUrl))
             {
                 return entity with
                 {
                     Media = entity.Media with
                     {
-                        HeroBanner = new ImageDetail()
+                        HeroBanner = new ImageDetail
                         {
                             Url = sale.HeroBannerUrl
                         }
                     }
                 };
-            }
-
-            return entity;
-        }
-
-        private SwitchGame UpdateColors(SwitchGame entity, SwitchGameSale sale)
-        {
-            if (!entity.Colors.SequenceEqual(sale.Colors))
-            {
-                return entity with { Colors = sale.Colors };
             }
 
             return entity;

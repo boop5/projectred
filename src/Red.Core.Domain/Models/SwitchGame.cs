@@ -17,6 +17,7 @@ namespace Red.Core.Domain.Models
         public SwitchGameMedia Media { get; init; } = new();
         public SwitchGamePlayModes PlayModes { get; init; } = new();
         public SwitchGamePriceDetails Price { get; init; } = new();
+        public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
 
         /// <summary>Meant to use to sort search results.</summary>
         /// <remarks>Higher numbers mean less popularity.</remarks>
@@ -31,7 +32,6 @@ namespace Red.Core.Domain.Models
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
         public DateTime? ReleaseDate { get; init; }
-        public int? AgeRating { get; init; }
         public int? DownloadSize { get; init; }
         public int? MinPlayers { get; init; }
         public int? MaxPlayers { get; init; }
@@ -63,7 +63,6 @@ namespace Red.Core.Domain.Models
                    && Description == other.Description
                    && Publisher == other.Publisher
                    && Developer == other.Developer
-                   && AgeRating == other.AgeRating
                    && DownloadSize == other.DownloadSize
                    && MinPlayers == other.MinPlayers
                    && MaxPlayers == other.MaxPlayers
@@ -76,6 +75,7 @@ namespace Red.Core.Domain.Models
                    && Nullable.Equals(ReleaseDate, other.ReleaseDate)
                    && Media.Equals(other.Media)
                    && Price.Equals(other.Price)
+                   && ContentRating.Equals(other.ContentRating)
                    && Categories.SequenceEqual(other.Categories)
                    && Languages.SequenceEqual(other.Languages)
                    && Nsuids.SequenceEqual(other.Nsuids)
@@ -92,11 +92,11 @@ namespace Red.Core.Domain.Models
             hashCode.Add(Slug);
             hashCode.Add(EshopUrl);
             hashCode.Add(Description);
+            hashCode.Add(ContentRating);
             hashCode.Add(Publisher);
             hashCode.Add(Developer);
             hashCode.Add(ReleaseDate);
             hashCode.Add(Categories);
-            hashCode.Add(AgeRating);
             hashCode.Add(DownloadSize);
             hashCode.Add(MinPlayers);
             hashCode.Add(MaxPlayers);

@@ -22,12 +22,7 @@ namespace Red.Infrastructure.NintendoApi
 
         public SwitchGameSale ConvertToGameSale(SalesSearchItem item)
         {
-            int? uskRating = null;
-
-            if (string.Equals(item.RatingInfo?.RatingSystem?.Name, "USK", StringComparison.InvariantCultureIgnoreCase))
-            {
-                uskRating = item.RatingInfo?.Rating?.Age;
-            }
+            var contentRating = BuildContentRating(item);
 
             return new()
             {
@@ -35,14 +30,18 @@ namespace Red.Infrastructure.NintendoApi
                 Colors = item.DominantColors.Where(HexColor.IsValidCode).Select(x => new HexColor(x)).ToList(),
                 HeroBannerUrl = item.HeroBannerUrl,
                 IsNew = item.IsNew ?? false,
-                UskRating = uskRating,
+                ContentRating = contentRating,
                 Title = item.FormalName ?? "",
                 Nsuid = item.Nsuid ?? ""
             };
         }
 
+
         public SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
         {
+            // todo: use actual country
+            var contentRating = BuildContentRating("DE", game);
+
             return new()
             {
                 Nsuids = game.Nsuids ?? new List<string>(),
@@ -54,8 +53,8 @@ namespace Red.Infrastructure.NintendoApi
                     Tabletop = game.TabletopMode == true,
                     Tv = game.TvMode == true
                 },
+                ContentRating = contentRating,
                 EshopUrl = game.Url,
-                AgeRating = game.AgeRating,
                 Coop = game.CoopPlay,
                 DemoAvailable = game.DemoAvailable,
                 Developer = game.Developer,
@@ -79,6 +78,47 @@ namespace Red.Infrastructure.NintendoApi
                     Cover = new ImageDetail { Url = game.image_url_sq_s ?? "" }
                 },
             };
+        }
+
+        private static ContentRating BuildContentRating(SalesSearchItem item)
+        {
+            var contentDescriptors = item.RatingInfo?.ContentDescriptors
+                                         .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+                                         .Select(x => x.Name!)
+                                         .ToList()
+                                     ?? new List<string>();
+
+            ContentRating contentRating = new();
+
+            if (!string.IsNullOrWhiteSpace(item.RatingInfo?.RatingSystem?.Name)
+                && item.RatingInfo?.Rating?.Age.HasValue == true)
+            {
+                contentRating = new()
+                {
+                    ContentDescriptors = contentDescriptors,
+                    System = item.RatingInfo.RatingSystem.Name,
+                    Age = item.RatingInfo.Rating.Age!.Value,
+                    Provisional = item.RatingInfo?.Rating?.Provisional ?? false
+                };
+            }
+
+            return contentRating;
+        }
+
+        private static CountryDictionary<ContentRating> BuildContentRating(string country, LibrarySearchGame game)
+        {
+            var contentRating = new CountryDictionary<ContentRating>();
+
+            if (game.AgeRating.HasValue && !string.IsNullOrWhiteSpace(game.AgeRatingType))
+            {
+                contentRating[country] = new()
+                {
+                    System = game.AgeRatingType,
+                    Age = (int) game.AgeRating
+                };
+            }
+
+            return contentRating;
         }
 
 

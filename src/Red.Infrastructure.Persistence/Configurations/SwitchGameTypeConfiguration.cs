@@ -78,6 +78,13 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Colors)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<HexColor>());
+
+            builder.Property(x => x.ContentRating)
+                   .HasDefaultValue(new CountryDictionary<ContentRating>());
+            builder.Property(x => x.ContentRating)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<ContentRating>>(x, serializerOptions) ?? new CountryDictionary<ContentRating>());
         }
 
         private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)
