@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Red.Core.Application.Extensions;
@@ -60,9 +61,10 @@ namespace Red.Infrastructure.NintendoApi
             return new List<SwitchGameSale>();
         }
 
-        public async Task<int> GetTotalGames()
+        public async Task<int> GetTotalGames(CultureInfo culture)
         {
-            var searchResult = await GetLibrary(new EshopGameQuery {Index = 0, Offset = 1});
+            var query = new EshopGameQuery(culture) {Index = 0, Offset = 1};
+            var searchResult = await GetLibrary(query);
 
             if (searchResult != null)
             {
@@ -72,10 +74,9 @@ namespace Red.Infrastructure.NintendoApi
             return 0;
         }
 
-        public async Task<int> GetTotalSales()
+        public async Task<int> GetTotalSales(CultureInfo culture)
         {
-            // todo: use proper country/locale
-            var query = EshopSalesQuery.New("DE", "de", 0, 1);
+            var query = EshopSalesQuery.New(culture, 0, 1);
             var url = _urlBuilder.BuildSalesQueryUrl(query);
             var response = await _http.GetAs<SalesSearchResult>(url);
 
@@ -97,7 +98,7 @@ namespace Red.Infrastructure.NintendoApi
                                    .Where(x => x.ProductCodeSS?.Count == 1)
                                    // some games have duplicate entries in the result, so lets remove them
                                    .DistinctBy(x => x.ProductCodeSS![0])
-                                   .Select(_converter.ConvertToSwitchGame)
+                                   .Select(x => _converter.ConvertToSwitchGame(query.Culture, x))
                                    .ToList();
             }
 

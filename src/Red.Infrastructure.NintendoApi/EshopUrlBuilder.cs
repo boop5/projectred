@@ -1,7 +1,7 @@
 ﻿using System.Linq;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
-using Red.Infrastructure.NintendoApi.Util;
 
 namespace Red.Infrastructure.NintendoApi
 {
@@ -10,6 +10,7 @@ namespace Red.Infrastructure.NintendoApi
     // source: https://github.com/cutecore/Nintendo-Switch-eShop-API
 
     // more:
+    // fq types: JOBOFFER, STANDARD, NEWS, DLC, MERCHANDISE, GAME, SUPPORT, EVENT, FIGURE, INTERVIEW
     // https://searching.nintendo-europe.com/de/select?q=*&start=0&rows=1&fq=*:*&fq=game_series_txt:%22super_smash_bros%22&fq=pg_s:GAME&fq=dates_released_dts:[*%20TO%20NOW]&fq=nsuid_txt:*&sort=score%20desc,%20date_from%20desc&wt=json
     // https://searching.nintendo-europe.com/de/select?q=*&start=0&rows=1&fq=*:*&fq=game_series_txt:%22super_smash_bros%22&fq=pg_s:MERCHANDISE&wt=json
 
@@ -24,18 +25,18 @@ namespace Red.Infrastructure.NintendoApi
 
         public string BuildSalesQueryUrl(EshopSalesQuery query)
         {
-            var baseUrl = "https://ec.nintendo.com/api";
-            var url = $"{baseUrl}/{query.Country}/{query.Locale}/search/sales?count={query.Count}&offset={query.Offset}";
+            var region = query.Culture.GetTwoLetterISORegionName();
+            var locale = query.Culture.TwoLetterISOLanguageName;
+            var url = $"https://ec.nintendo.com/api/{region}/{locale}/search/sales"
+                      + $"?count={query.Count}&offset={query.Offset}";
 
             return url;
         }
 
         public string BuildGameQueryUrl(EshopGameQuery query)
         {
-            // todo: take locale/region from query
-            var locale = "en";
-            var regionUrl = Constants.NintendoEUUrl;
-            var baseUrl = $"{regionUrl}/{locale}/select";
+            var locale = query.Culture.TwoLetterISOLanguageName;
+            var baseUrl = $"https://searching.nintendo-europe.com/{locale}/select";
             var filter = $"q={query.Term}" +
                          $"&start={query.Index}" +
                          $"&rows={query.Offset}" +
@@ -62,9 +63,8 @@ namespace Red.Infrastructure.NintendoApi
             }
 
             var q = string.Join(null, query.Nsuids.Take(50).Select(x => $"&ids={x}"));
-            // todo: use actual country/language
-            var country = "DE";
-            var language = "en";
+            var country = query.Culture.GetTwoLetterISORegionName();
+            var language = query.Culture.TwoLetterISOLanguageName;
             var url = $"https://api.ec.nintendo.com/v1/price?country={country}&lang={language}&limit=50{q}";
 
             return url;

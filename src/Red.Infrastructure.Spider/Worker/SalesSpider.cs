@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
@@ -27,17 +29,16 @@ namespace Red.Infrastructure.Spider.Worker
         private async Task<IReadOnlyCollection<EshopSalesQuery>> GetQueries()
         {
             // todo: use proper country/locale
-            var country = "DE";
-            var locale = "de";
+            var culture = new CultureInfo("en-DE");
 
             // todo: move to constants
             var maxPerChunk = 30;
-            var totalSales = await _eshop.GetTotalSales();
+            var totalSales = await _eshop.GetTotalSales(culture);
             var queries = new List<EshopSalesQuery>();
 
             for (var i = 0; i < totalSales; i += maxPerChunk)
             {
-                queries.Add(EshopSalesQuery.New(country, locale, i, maxPerChunk));
+                queries.Add(EshopSalesQuery.New(culture, i, maxPerChunk));
             }
 
             return queries;
@@ -91,10 +92,12 @@ namespace Red.Infrastructure.Spider.Worker
 
         private SwitchGame UpdateContentRating(SwitchGame entity, SwitchGameSale sale, EshopSalesQuery query)
         {
-            if (entity.ContentRating[query.Country]?.Equals(sale.ContentRating) == false)
+            var country = query.Culture.GetTwoLetterISORegionName();
+
+            if (entity.ContentRating[country]?.Equals(sale.ContentRating) == false)
             {
                 var newContentRating = entity.ContentRating.ToDictionary().ToDictionary(x => x.Key, x => x.Value);
-                newContentRating[query.Country] = sale.ContentRating;
+                newContentRating[country] = sale.ContentRating;
 
                 return entity with {ContentRating = CountryDictionary<ContentRating>.New(newContentRating)};
             }

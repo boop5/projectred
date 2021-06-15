@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Models;
@@ -36,11 +37,10 @@ namespace Red.Infrastructure.NintendoApi
             };
         }
 
-
-        public SwitchGame ConvertToSwitchGame(LibrarySearchGame game)
+        public SwitchGame ConvertToSwitchGame(CultureInfo culture, LibrarySearchGame game)
         {
-            // todo: use actual country
-            var contentRating = BuildContentRating("DE", game);
+            var region = culture.GetTwoLetterISORegionName();
+            var contentRating = BuildContentRating(region, game);
 
             return new()
             {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Red.Core.Domain.Models;
 
@@ -22,7 +23,7 @@ namespace Red.Core.Application.Interfaces
         Task<IReadOnlyCollection<SwitchGame>> SearchGames(EshopGameQuery query);
         Task<IReadOnlyCollection<SwitchGamePrice>> GetPrices(EshopMultiPriceQuery query);
         Task<IReadOnlyCollection<SwitchGameSale>> GetSales(EshopSalesQuery query);
-        Task<int> GetTotalGames();
-        Task<int> GetTotalSales();
+        Task<int> GetTotalGames(CultureInfo culture);
+        Task<int> GetTotalSales(CultureInfo culture);
     }
 }

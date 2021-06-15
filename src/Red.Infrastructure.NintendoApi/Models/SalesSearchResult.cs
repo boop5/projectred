@@ -83,7 +83,6 @@ namespace Red.Infrastructure.NintendoApi.Models
         public string? ContentType { get; init; }
 
         [JsonPropertyName("dominant_colors")]
-        // todo: ggf converter?
         public List<string> DominantColors { get; init; } = new();
 
         [JsonPropertyName("formal_name")]

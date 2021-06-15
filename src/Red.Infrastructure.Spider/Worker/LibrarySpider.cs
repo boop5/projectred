@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,15 +26,17 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
+            // todo: use proper country/locale
+            var culture = new CultureInfo("en-DE");
             var start = 0;
             var increment = 200;
-            var end = await _eshop.GetTotalGames();
+            var end = await _eshop.GetTotalGames(culture);
             var taskCount = (int) Math.Ceiling(1f * end / increment);
             var tasks = new List<Task>(taskCount);
 
             for (var i = start; i < end; i += increment)
             {
-                var task = ProcessQuery(new EshopGameQuery {Index = i, Offset = increment});
+                var task = ProcessQuery(new EshopGameQuery(culture) {Index = i, Offset = increment});
                 tasks.Add(task);
             }
 

@@ -27,4 +27,3 @@ Host.CreateDefaultBuilder(args)
         })
     .Build()
     .Run();
-

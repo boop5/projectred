@@ -1,26 +1,19 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Red.Core.Domain.Models
 {
     public sealed class EshopSalesQuery
     {
-        public string Country { get; private init; } = null!;
         public int Offset { get; private init; }
-        public string Locale { get; private init; } = null!;
         public int Count { get; private init; }
+        public CultureInfo Culture { get; private init; } = null!;
 
-        private EshopSalesQuery()
+        private EshopSalesQuery() {}
+
+        public static EshopSalesQuery New(CultureInfo culture, int start, int count)
         {
-        }
-
-        public static EshopSalesQuery New(string country, string locale, int start, int count)
-        {
-            if (string.IsNullOrWhiteSpace(country))
-            {
-                throw new ArgumentException();
-            }
-
-            if (string.IsNullOrWhiteSpace(locale))
+            if (culture == null)
             {
                 throw new ArgumentException();
             }
@@ -37,8 +30,7 @@ namespace Red.Core.Domain.Models
 
             return new EshopSalesQuery
             {
-                Country = country,
-                Locale = locale,
+                Culture = culture,
                 Offset = start,
                 Count = count
             };

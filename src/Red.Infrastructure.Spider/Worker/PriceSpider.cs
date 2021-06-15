@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,8 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
+            // todo: use proper country/locale
+            var culture = new CultureInfo("en-DE");
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
             var games = await repo.Get()
                                   .OrderByDescending(x => x.ReleaseDate)
@@ -48,34 +51,33 @@ namespace Red.Infrastructure.Spider.Worker
 
             foreach (var groupOfChunks in chunks.ChunkBy(processChunksAtOnce))
             {
-                var tasks = groupOfChunks.Select(x => UpdateGames(x.ToList()));
+                var tasks = groupOfChunks.Select(x => UpdateGames(culture, x.ToList()));
 
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task UpdateGames(IReadOnlyCollection<SwitchGame> games)
+        private async Task UpdateGames(CultureInfo culture, IReadOnlyCollection<SwitchGame> games)
         {
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
             var nsuids = games.Select(x => x.Nsuids[0]);
-            var query = new EshopMultiPriceQuery(nsuids);
+            var query = new EshopMultiPriceQuery(culture, nsuids);
             var prices = await _eshop.GetPrices(query);
 
             foreach (var price in prices)
             {
                 // todo: cant use single when we allow games with multiple nsuids - see above
                 var game = games.Single(x => x.Nsuids.Contains(price.Nsuid));
-                await UpdatePrice(game, price, repo);
+                await UpdatePrice(culture, game, price, repo);
             }
         }
 
-        private async Task UpdatePrice(SwitchGame game, SwitchGamePrice price, ISwitchGameRepository repo)
+        private async Task UpdatePrice(CultureInfo culture, SwitchGame game, SwitchGamePrice price, ISwitchGameRepository repo)
         {
-            // todo: use actual country
-            string country = "DE";
             var entity = (await repo.GetByProductCode(game.ProductCode))!;
+            var country = culture.GetTwoLetterISORegionName();
             var lastPrice = game.Price.History[country]?.OrderBy(x => x.Date).LastOrDefault();
-            var ctx = UpdateContext.New(country, game, lastPrice, price);
+            var ctx = UpdateContext.New(culture, game, lastPrice, price);
 
             var updatedPrice = entity.Price with { };
             updatedPrice = UpdateRegularPrice(ctx, updatedPrice);
@@ -97,11 +99,11 @@ namespace Red.Infrastructure.Spider.Worker
 
         private sealed record UpdateContext
         {
-            public static UpdateContext New(string country, SwitchGame game, DatedPrice? lastPrice, SwitchGamePrice price)
+            public static UpdateContext New(CultureInfo culture, SwitchGame game, DatedPrice? lastPrice, SwitchGamePrice price)
             {
                 return new()
                 {
-                    Country = country ?? throw new Exception(),
+                    Culture = culture ?? throw new Exception(),
                     Game = game ?? throw new Exception(),
                     LastPrice = lastPrice,
                     Price = price ?? throw new Exception()
@@ -109,8 +111,11 @@ namespace Red.Infrastructure.Spider.Worker
             }
 
             #pragma warning disable CS8618
-            private UpdateContext() { }
-            public string Country { get; private init; }
+            private UpdateContext()
+            {
+            }
+
+            public CultureInfo Culture { get; private init; }
             public SwitchGame Game { get; private init; }
             public DatedPrice? LastPrice { get; private init; }
             public SwitchGamePrice Price { get; private init; }
@@ -124,10 +129,11 @@ namespace Red.Infrastructure.Spider.Worker
                 if (ctx.LastPrice == null || ctx.Price.RegularPrice.HasValue
                     && ctx.LastPrice.Amount - ctx.Price.RegularPrice < 0.01)
                 {
+                    var country = ctx.Culture.GetTwoLetterISORegionName();
                     var history = details.History with { };
-                    var localHistory = history[ctx.Country] ?? new List<DatedPrice>();
+                    var localHistory = history[country] ?? new List<DatedPrice>();
                     localHistory.Add(DatedPrice.New(ctx.Price.RegularPrice!.Value, ctx.Price.Currency!));
-                    history[ctx.Country] = localHistory.Distinct().ToList();
+                    history[country] = localHistory.Distinct().ToList();
 
                     return details with {History = history};
                 }
@@ -143,13 +149,14 @@ namespace Red.Infrastructure.Spider.Worker
                 return details;
             }
 
+            var country = ctx.Culture.GetTwoLetterISORegionName();
             var ath = details.AllTimeHigh with { };
-            var localAth = ath[ctx.Country];
+            var localAth = ath[country];
             var highestPrice = Math.Max(ctx.Price.CurrentPrice ?? int.MinValue, ctx.Price.RegularPrice.Value);
 
             if (localAth == null || Math.Abs(localAth.Amount - highestPrice) < 0.01)
             {
-                ath[ctx.Country] = Price.New(highestPrice, ctx.Price.Currency);
+                ath[country] = Price.New(highestPrice, ctx.Price.Currency);
 
                 return details with {AllTimeHigh = ath};
             }
@@ -164,13 +171,14 @@ namespace Red.Infrastructure.Spider.Worker
                 return details;
             }
 
+            var country = ctx.Culture.GetTwoLetterISORegionName();
             var atl = details.AllTimeLow with { };
-            var localAtl = atl[ctx.Country];
+            var localAtl = atl[country];
             var lowestPrice = Math.Min(ctx.Price.CurrentPrice ?? int.MaxValue, ctx.Price.RegularPrice.Value);
 
             if (localAtl == null || Math.Abs(localAtl.Amount - lowestPrice) >= 0.01)
             {
-                atl[ctx.Country] = Price.New(lowestPrice, ctx.Price.Currency);
+                atl[country] = Price.New(lowestPrice, ctx.Price.Currency);
 
                 return details with {AllTimeHigh = atl};
             }
@@ -186,9 +194,10 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 if (ctx.LastPrice == null || Math.Abs(ctx.LastPrice.Amount - (float) ctx.Price.CurrentPrice) >= 0.01)
                 {
+                    var country = ctx.Culture.GetTwoLetterISORegionName();
                     var history = ctx.Game.Price.History with { };
-                    history[ctx.Country] ??= new List<DatedPrice>();
-                    history[ctx.Country]!.Add(DatedPrice.New(ctx.Price.CurrentPrice!.Value, ctx.Price.Currency));
+                    history[country] ??= new List<DatedPrice>();
+                    history[country]!.Add(DatedPrice.New(ctx.Price.CurrentPrice!.Value, ctx.Price.Currency));
 
                     return details with
                     {
@@ -204,11 +213,12 @@ namespace Red.Infrastructure.Spider.Worker
         {
             if (ctx.Price.RegularPrice.HasValue && !string.IsNullOrWhiteSpace(ctx.Price.Currency))
             {
+                var country = ctx.Culture.GetTwoLetterISORegionName();
                 var rp = ctx.Game.Price.RegularPrice with { };
-                rp[ctx.Country] = Price.New(ctx.Price.RegularPrice.Value, ctx.Price.Currency);
+                rp[country] = Price.New(ctx.Price.RegularPrice.Value, ctx.Price.Currency);
 
-                if (details.RegularPrice[ctx.Country] == null
-                    || !details.RegularPrice[ctx.Country]!.Equals(rp[ctx.Country]))
+                if (details.RegularPrice[country] == null
+                    || !details.RegularPrice[country]!.Equals(rp[country]))
                 {
                     return details with {RegularPrice = rp};
                 }

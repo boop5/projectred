@@ -1,40 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace Red.Core.Domain.Models
 {
-    [DebuggerDisplay("Query {Nsuids.Count,nq} Nsuids", Type ="Eshop Price Query")]
+    [DebuggerDisplay("Query {Nsuids.Count,nq} Nsuids", Type = "Eshop Price Query")]
     public sealed class EshopMultiPriceQuery
     {
-        private readonly IReadOnlyCollection<string> _nsuids = new List<string>();
+        public CultureInfo Culture { get; }
+        public IReadOnlyCollection<string> Nsuids { get; }
 
-        public IReadOnlyCollection<string> Nsuids
+        public EshopMultiPriceQuery(CultureInfo culture, IEnumerable<string> nsuids)
         {
-            get => _nsuids;
-            private init
-            {
-                if (value.Count < 1)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(Nsuids), "Minimum 1 id required");
-                }
-                if (value.Count > 50)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(Nsuids), "Maximum 50 ids allowed");
-                }
-
-                _nsuids = value;
-            }
-        }
-
-        public EshopMultiPriceQuery(IEnumerable<string> nsuids)
-        {
+            Culture = culture;
             Nsuids = nsuids.ToList();
         }
 
-        public EshopMultiPriceQuery(params string[] nsuids)
+        public EshopMultiPriceQuery(CultureInfo culture, params string[] nsuids)
         {
+            Culture = culture;
             Nsuids = nsuids.ToList();
         }
     }
