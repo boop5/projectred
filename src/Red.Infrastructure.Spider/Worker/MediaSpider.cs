@@ -13,7 +13,6 @@ using Jint.Native.Array;
 using Jint.Native.Object;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 #pragma warning disable
@@ -275,25 +274,16 @@ namespace Red.Infrastructure.Spider.Worker
         #endregion
     }
 
-    internal sealed class ScreenshotSpider : TimedWorker
+    internal sealed class MediaSpider : Spider
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public ScreenshotSpider(IAppLogger<ScreenshotSpider> log,
+        public MediaSpider(IAppLogger<MediaSpider> log,
+                                MediaSpiderConfiguration configuration,
                                 IServiceProvider serviceProvider)
-            : base(log)
+            : base(log, configuration)
         {
             _serviceProvider = serviceProvider;
-        }
-
-        protected override TimeSpan GetInitialDelay()
-        {
-            return TimeSpan.FromMinutes(60);
-        }
-
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromHours(24);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

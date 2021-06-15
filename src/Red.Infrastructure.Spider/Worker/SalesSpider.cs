@@ -4,27 +4,24 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider.Worker
 {
-    public class SalesSpider : TimedWorker
+    internal sealed class SalesSpider : Spider
     {
         private readonly IEshop _eshop;
         private readonly IServiceProvider _serviceProvider;
 
-        public SalesSpider(IAppLogger<SalesSpider> log, IServiceProvider serviceProvider, IEshop eshop)
-            : base(log)
+        public SalesSpider(IAppLogger<SalesSpider> log, 
+                           SalesSpiderConfiguration configuration,
+                           IServiceProvider serviceProvider, 
+                           IEshop eshop)
+            : base(log, configuration)
         {
             _serviceProvider = serviceProvider;
             _eshop = eshop;
-        }
-
-        protected override TimeSpan GetInitialDelay()
-        {
-            return TimeSpan.FromMinutes(0);
         }
 
         private async Task<IReadOnlyCollection<EshopSalesQuery>> GetQueries()
@@ -44,11 +41,6 @@ namespace Red.Infrastructure.Spider.Worker
             }
 
             return queries;
-        }
-
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromMinutes(5);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

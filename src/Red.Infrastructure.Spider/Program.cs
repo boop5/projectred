@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Red.Infrastructure.Logging;
 using Red.Infrastructure.NintendoApi;
 using Red.Infrastructure.Persistence;
+using Red.Infrastructure.Spider;
 using Red.Infrastructure.Spider.Worker;
 using Red.Infrastructure.Utilities;
 
@@ -13,6 +14,7 @@ Host.CreateDefaultBuilder(args)
         {
             var cfg = hostContext.Configuration;
 
+            services.AddAppSettings(hostContext.Configuration);
             services.AddUtilities();
             services.AddLoggingLayer();
             services.AddPersistenceLayer(cfg.GetConnectionString("Default"));
@@ -20,8 +22,9 @@ Host.CreateDefaultBuilder(args)
 
             services.AddHostedService<PriceSpider>();
             services.AddHostedService<LibrarySpider>();
-            services.AddHostedService<ScreenshotSpider>();
+            services.AddHostedService<MediaSpider>();
             services.AddHostedService<SalesSpider>();
         })
     .Build()
     .Run();
+

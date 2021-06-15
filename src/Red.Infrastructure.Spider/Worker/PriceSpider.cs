@@ -5,35 +5,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Red.Core.Application;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider.Worker
 {
-    public class PriceSpider : TimedWorker
+    internal sealed class PriceSpider : Spider
     {
         private readonly IEshop _eshop;
         private readonly IServiceProvider _serviceProvider;
 
         public PriceSpider(IAppLogger<PriceSpider> log,
+                           PriceSpiderConfiguration configuration,
                            IEshop eshop,
                            IServiceProvider serviceProvider)
-            : base(log)
+            : base(log, configuration)
         {
             _eshop = eshop;
             _serviceProvider = serviceProvider;
-        }
-
-        protected override TimeSpan GetInitialDelay()
-        {
-            return TimeSpan.FromMinutes(99);
-        }
-
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromMinutes(5);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

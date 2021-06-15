@@ -3,34 +3,24 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Red.Core.Application;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider.Worker
 {
-    public class LibrarySpider : TimedWorker
+    internal sealed class LibrarySpider : Spider
     {
         private readonly IEshop _eshop;
         private readonly IServiceProvider _sp;
 
         public LibrarySpider(IAppLogger<LibrarySpider> log,
+                             LibrarySpiderConfiguration configuration,
                              IServiceProvider sp,
                              IEshop eshop)
-            : base(log)
+            : base(log, configuration)
         {
             _sp = sp;
             _eshop = eshop;
-        }
-
-        protected override TimeSpan GetTaskInterval()
-        {
-            return TimeSpan.FromMinutes(5);
-        }
-
-        protected override TimeSpan GetInitialDelay()
-        {
-            return TimeSpan.FromMinutes(10);
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)

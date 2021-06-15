@@ -74,6 +74,7 @@ namespace Red.Infrastructure.NintendoApi
 
         public async Task<int> GetTotalSales()
         {
+            // todo: use proper country/locale
             var query = EshopSalesQuery.New("DE", "de", 0, 1);
             var url = _urlBuilder.BuildSalesQueryUrl(query);
             var response = await _http.GetAs<SalesSearchResult>(url);
