@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Red.Core.Domain.Models
 {
@@ -97,7 +98,7 @@ namespace Red.Core.Domain.Models
 
         #endregion
 
-        /*public override string ToString()
+        public override string ToString()
         {
             var sb = new StringBuilder();
 
@@ -107,6 +108,6 @@ namespace Red.Core.Domain.Models
             }
 
             return sb.ToString();
-        }*/
+        }
     }
 }

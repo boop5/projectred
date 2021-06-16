@@ -17,6 +17,15 @@ using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 #pragma warning disable
 
+
+/*
+ *
+ *  this is awful code. pls dont judge me. im gonna refactor it, i swear
+ *
+ *
+ */
+
+
 namespace Red.Infrastructure.Spider.Worker
 {
     internal sealed class GalleriesLoader

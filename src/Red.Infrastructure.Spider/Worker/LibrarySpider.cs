@@ -62,8 +62,12 @@ namespace Red.Infrastructure.Spider.Worker
                 {
                     var dbEntity = await repo.GetMatchingGame(game, query.Culture);
 
-                    // todo: handle slug issue (minefield ...)
-                    if (dbEntity != null)
+                    if (dbEntity == null)
+                    {
+                        // todo: handle slug issue (minefield ...)
+                        await repo.AddAsync(game);
+                    }
+                    else
                     {
                         var updatedEntity = _gameMerger.Merge(dbEntity, game);
 
@@ -75,10 +79,6 @@ namespace Red.Infrastructure.Spider.Worker
                                 updatedEntity.ProductCode);
                             await repo.UpdateAsync(updatedEntity);
                         }
-                    }
-                    else
-                    {
-                        await repo.AddAsync(game);
                     }
                 }
             }

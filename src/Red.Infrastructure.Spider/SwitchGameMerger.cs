@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Red.Core.Application;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
+using Red.Core.Domain;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider
