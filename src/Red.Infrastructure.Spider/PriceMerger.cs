@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Red.Core.Application.Extensions;
@@ -19,7 +18,17 @@ namespace Red.Infrastructure.Spider
             _game = game;
             _price = price;
             _country = culture.GetTwoLetterISORegionName();
-            _lastPrice = game.Price.History[_country]?.OrderBy(x => x.Date).LastOrDefault();
+            _lastPrice = game.Price[_country]?.History.OrderBy(x => x.Date).LastOrDefault();
+        }
+
+        private bool PriceDifferent(float? a, float? b)
+        {
+            if (a == null || b == null)
+            {
+                return true;
+            }
+
+            return Math.Abs(a.Value - b.Value) < 0.01;
         }
 
         private SwitchGamePriceDetails InitializeHistory(SwitchGamePriceDetails details)
@@ -27,14 +36,12 @@ namespace Red.Infrastructure.Spider
             if (!_price.Discounted && !string.IsNullOrWhiteSpace(_price.Currency))
             {
                 if (_lastPrice == null || _price.RegularPrice.HasValue
-                    && _lastPrice.Amount - _price.RegularPrice < 0.01)
+                    && PriceDifferent(_lastPrice.Amount, _price.RegularPrice))
                 {
-                    var history = details.History with { };
-                    var localHistory = history[_country] ?? new List<DatedPrice>();
+                    var localHistory = details.History.ToList();
                     localHistory.Add(DatedPrice.New(_price.RegularPrice!.Value, _price.Currency!));
-                    history[_country] = localHistory.Distinct().ToList();
 
-                    return details with {History = history};
+                    return details with { History = localHistory.Distinct().ToList() };
                 }
             }
 
@@ -49,14 +56,13 @@ namespace Red.Infrastructure.Spider
             }
 
             var ath = details.AllTimeHigh with { };
-            var localAth = ath[_country];
             var highestPrice = Math.Max(_price.CurrentPrice ?? int.MinValue, _price.RegularPrice.Value);
 
-            if (localAth == null || Math.Abs(localAth.Amount - highestPrice) < 0.01)
+            if (ath == null || PriceDifferent(ath.Amount, highestPrice))
             {
-                ath[_country] = Price.New(highestPrice, _price.Currency);
+                ath = Price.New(highestPrice, _price.Currency);
 
-                return details with {AllTimeHigh = ath};
+                return details with { AllTimeHigh = ath };
             }
 
             return details;
@@ -70,14 +76,13 @@ namespace Red.Infrastructure.Spider
             }
 
             var atl = details.AllTimeLow with { };
-            var localAtl = atl[_country];
             var lowestPrice = Math.Min(_price.CurrentPrice ?? int.MaxValue, _price.RegularPrice.Value);
 
-            if (localAtl == null || Math.Abs(localAtl.Amount - lowestPrice) >= 0.01)
+            if (atl == null || PriceDifferent(atl.Amount, lowestPrice))
             {
-                atl[_country] = Price.New(lowestPrice, _price.Currency);
+                atl = Price.New(lowestPrice, _price.Currency);
 
-                return details with {AllTimeHigh = atl};
+                return details with { AllTimeHigh = atl };
             }
 
             return details;
@@ -85,20 +90,16 @@ namespace Red.Infrastructure.Spider
 
         private SwitchGamePriceDetails UpdateDiscount(SwitchGamePriceDetails details)
         {
-            details = details with {OnDiscount = _price.Discounted};
+            details = details with { OnDiscount = _price.Discounted };
 
             if (_price.Discounted && _price.CurrentPrice.HasValue && !string.IsNullOrWhiteSpace(_price.Currency))
             {
-                if (_lastPrice == null || Math.Abs(_lastPrice.Amount - (float) _price.CurrentPrice) >= 0.01)
+                if (_lastPrice == null || PriceDifferent(_lastPrice.Amount, (float)_price.CurrentPrice))
                 {
-                    var history = _game.Price.History with { };
-                    history[_country] ??= new List<DatedPrice>();
-                    history[_country]!.Add(DatedPrice.New(_price.CurrentPrice!.Value, _price.Currency));
+                    var history = details.History.ToList();
+                    history.Add(DatedPrice.New(_price.CurrentPrice!.Value, _price.Currency));
 
-                    return details with
-                    {
-                        History = history
-                    };
+                    return details with { History = history };
                 }
             }
 
@@ -109,13 +110,11 @@ namespace Red.Infrastructure.Spider
         {
             if (_price.RegularPrice.HasValue && !string.IsNullOrWhiteSpace(_price.Currency))
             {
-                var rp = _game.Price.RegularPrice with { };
-                rp[_country] = Price.New(_price.RegularPrice.Value, _price.Currency);
+                var rp = Price.New(_price.RegularPrice.Value, _price.Currency);
 
-                if (details.RegularPrice[_country] == null
-                    || !details.RegularPrice[_country]!.Equals(rp[_country]))
+                if (details.RegularPrice == null || !details.RegularPrice!.Equals(rp))
                 {
-                    return details with {RegularPrice = rp};
+                    return details with { RegularPrice = rp };
                 }
             }
 
@@ -137,15 +136,24 @@ namespace Red.Infrastructure.Spider
 
         public SwitchGame MergePrice()
         {
-            var updatedPrice = _game.Price with { };
-            updatedPrice = UpdateRegularPrice(updatedPrice);
-            updatedPrice = UpdateDiscount(updatedPrice);
-            updatedPrice = InitializeHistory(updatedPrice);
-            updatedPrice = UpdateSalesStatus(updatedPrice);
-            updatedPrice = UpdateAllTimeLow(updatedPrice);
-            updatedPrice = UpdateAllTimeHigh(updatedPrice);
+            var priceCopy = _game.Price.Merge(_game.Price); // clone
+            if (priceCopy[_country] == null)
+            {
+                priceCopy[_country] = new SwitchGamePriceDetails();
+            }
 
-            var updatedEntity = _game with {Price = updatedPrice};
+            var updatedDetails = priceCopy[_country]! with { };
+            updatedDetails = UpdateRegularPrice(updatedDetails);
+            updatedDetails = UpdateDiscount(updatedDetails);
+            updatedDetails = InitializeHistory(updatedDetails);
+            updatedDetails = UpdateSalesStatus(updatedDetails);
+            updatedDetails = UpdateAllTimeLow(updatedDetails);
+            updatedDetails = UpdateAllTimeHigh(updatedDetails);
+
+            priceCopy[_country] = updatedDetails;
+
+            var updatedEntity = _game with { Price = priceCopy };
+
             if (!_game.Price.Equals(updatedEntity.Price))
             {
                 return updatedEntity;

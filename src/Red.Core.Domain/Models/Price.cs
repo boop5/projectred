@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Red.Core.Domain.Models
 {
-    [DebuggerDisplay("{Amount} {Currency}")]
+    [DebuggerDisplay("{Amount,nq} {Currency,nq}")]
     public sealed record Price
     {
         public float Amount { get; init; }

@@ -21,7 +21,7 @@ namespace Red.Core.Domain.Models
         /// <remarks>Higher numbers mean less popularity.</remarks>
         public int Popularity { get; init; } = int.MaxValue;
 
-        public SwitchGamePriceDetails Price { get; init; } = new();
+        public CountryDictionary<SwitchGamePriceDetails> Price { get; init; } = new();
         public string ProductCode { get; init; } = "";
         public string Region { get; init; } = "";
 

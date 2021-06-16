@@ -69,7 +69,7 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Price)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<SwitchGamePriceDetails>(x, serializerOptions)!);
+                       x => JsonSerializer.Deserialize<CountryDictionary<SwitchGamePriceDetails>>(x, serializerOptions) ?? new CountryDictionary<SwitchGamePriceDetails>());
 
             builder.Property(x => x.Colors)
                    .HasConversion(

@@ -128,7 +128,6 @@ namespace Red.Infrastructure.NintendoApi
             return contentRating;
         }
 
-
         public SwitchGamePrice ConvertToSwitchGamePrice(PriceSearchItem price)
         {
             float? regularPrice = null;
