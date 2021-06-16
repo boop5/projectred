@@ -85,6 +85,13 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
                        x => JsonSerializer.Deserialize<CountryDictionary<ContentRating>>(x, serializerOptions) ?? new CountryDictionary<ContentRating>());
+
+            builder.Property(x => x.Description)
+                   .HasDefaultValue(new CountryDictionary<string>());
+            builder.Property(x => x.Description)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>());
         }
 
         private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)

@@ -12,14 +12,17 @@ namespace Red.Infrastructure.Spider.Worker
     internal sealed class LibrarySpider : Spider
     {
         private readonly IEshop _eshop;
+        private readonly ISwitchGameMerger _gameMerger;
         private readonly IServiceProvider _sp;
 
         public LibrarySpider(IAppLogger<LibrarySpider> log,
                              LibrarySpiderConfiguration configuration,
+                             ISwitchGameMerger gameMerger,
                              IServiceProvider sp,
                              IEshop eshop)
             : base(log, configuration)
         {
+            _gameMerger = gameMerger;
             _sp = sp;
             _eshop = eshop;
         }
@@ -38,6 +41,7 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 var task = ProcessQuery(new EshopGameQuery(culture) {Index = i, Offset = increment});
                 tasks.Add(task);
+                break;
             }
 
             await Task.WhenAll(tasks);
@@ -54,16 +58,17 @@ namespace Red.Infrastructure.Spider.Worker
 
                 foreach (var game in games)
                 {
-                    // todo: add region in request
-                    var dbEntity = await repo.GetByProductCode(game.ProductCode);
-                    var existsInDb = dbEntity != null;
+                    var dbEntity = await repo.GetMatchingGame(game, query.Culture);
 
                     // todo: handle slug issue (minefield ...)
-                    if (existsInDb)
+                    if (dbEntity != null)
                     {
-                        if (!Equals(dbEntity, game))
+                        var updatedEntity = _gameMerger.Merge(dbEntity, game);
+
+                        if (!Equals(updatedEntity, dbEntity))
                         {
-                            await repo.UpdateAsync(game);
+                            Log.LogInformation("Update existing Game \"{title}\" [{productCode}]", updatedEntity.Title ?? "", updatedEntity.ProductCode);
+                            await repo.UpdateAsync(updatedEntity);
                         }
                     }
                     else

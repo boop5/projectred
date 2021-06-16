@@ -9,7 +9,7 @@ namespace Red.Core.Domain.Models
         public int Age { get; init; }
         public List<string> ContentDescriptors { get; init; } = new();
         public bool Provisional { get; init; }
-        public string System { get; init; }
+        public string System { get; init; } = "";
 
         #region Equality
 

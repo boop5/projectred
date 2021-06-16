@@ -41,6 +41,12 @@ namespace Red.Infrastructure.NintendoApi
         {
             var region = culture.GetTwoLetterISORegionName();
             var contentRating = BuildContentRating(region, game);
+            var description = new CountryDictionary<string>();
+
+            if (!string.IsNullOrWhiteSpace(game.Excerpt))
+            {
+                description[culture.TwoLetterISOLanguageName] = game.Excerpt;
+            }
 
             return new()
             {
@@ -60,7 +66,7 @@ namespace Red.Infrastructure.NintendoApi
                 Developer = game.Developer,
                 Publisher = game.Publisher,
                 VoucherPossible = game.SwitchGameVoucher,
-                Description = game.Excerpt,
+                Description = description,
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
                 Popularity = game.Popularity ?? 0,
@@ -72,6 +78,7 @@ namespace Red.Infrastructure.NintendoApi
                 // todo: Insert actual region
                 Region = "EU",
                 ProductCode = game.ProductCodeSS![0].Trim(),
+                FsId = game.FsId,
                 // todo: add missing fields
                 Media = new SwitchGameMedia
                 {

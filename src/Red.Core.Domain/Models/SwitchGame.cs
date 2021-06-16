@@ -6,29 +6,30 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
-        public string ProductCode { get; init; } = "";
-        public string Region { get; init; } = "";
-
         public List<string> Categories { get; init; } = new(0);
-        public List<string> Languages { get; init; } = new(0);
-        public List<string> Nsuids { get; init; } = new(0);
         public List<HexColor> Colors { get; init; } = new(0);
+        public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
+        public CountryDictionary<string> Description { get; init; } = new();
+        public string? FsId { get; init; }
+        public List<string> Languages { get; init; } = new(0);
 
         public SwitchGameMedia Media { get; init; } = new();
+        public List<string> Nsuids { get; init; } = new(0);
         public SwitchGamePlayModes PlayModes { get; init; } = new();
-        public SwitchGamePriceDetails Price { get; init; } = new();
-        public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
 
         /// <summary>Meant to use to sort search results.</summary>
         /// <remarks>Higher numbers mean less popularity.</remarks>
         public int Popularity { get; init; } = int.MaxValue;
+
+        public SwitchGamePriceDetails Price { get; init; } = new();
+        public string ProductCode { get; init; } = "";
+        public string Region { get; init; } = "";
 
         #region Optional
 
         public string? Title { get; init; }
         public string? EshopUrl { get; init; }
         public string? Slug { get; init; }
-        public string? Description { get; init; }
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
         public DateTime? ReleaseDate { get; init; }
@@ -57,59 +58,65 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            return Title == other.Title
-                   && Slug == other.Slug
-                   && EshopUrl == other.EshopUrl
-                   && Description == other.Description
-                   && Publisher == other.Publisher
-                   && Developer == other.Developer
-                   && DownloadSize == other.DownloadSize
-                   && MinPlayers == other.MinPlayers
-                   && MaxPlayers == other.MaxPlayers
-                   && Coop == other.Coop
-                   && DemoAvailable == other.DemoAvailable
-                   && SupportsCloudSave == other.SupportsCloudSave
-                   && RemovedFromEshop == other.RemovedFromEshop
-                   && VoucherPossible == other.VoucherPossible
-                   && Popularity == other.Popularity
-                   && Nullable.Equals(ReleaseDate, other.ReleaseDate)
-                   && Media.Equals(other.Media)
-                   && Price.Equals(other.Price)
-                   && ContentRating.Equals(other.ContentRating)
-                   && Categories.SequenceEqual(other.Categories)
-                   && Languages.SequenceEqual(other.Languages)
+            return ProductCode == other.ProductCode
+                   && FsId == other.FsId
+                   && Region == other.Region
+                   && Categories.SequenceEqual(other.Categories) 
+                   && Languages.SequenceEqual(other.Languages) 
                    && Nsuids.SequenceEqual(other.Nsuids)
-                   && PlayModes.Equals(other.PlayModes);
+                   && Colors.SequenceEqual(other.Colors) 
+                   && Media.Equals(other.Media) 
+                   && PlayModes.Equals(other.PlayModes)
+                   && Price.Equals(other.Price) 
+                   && ContentRating.Equals(other.ContentRating) 
+                   && Description.Equals(other.Description)
+                   && Popularity == other.Popularity 
+                   && Title == other.Title 
+                   && EshopUrl == other.EshopUrl 
+                   && Slug == other.Slug
+                   && Publisher == other.Publisher 
+                   && Developer == other.Developer 
+                   && Nullable.Equals(ReleaseDate, other.ReleaseDate)
+                   && DownloadSize == other.DownloadSize 
+                   && MinPlayers == other.MinPlayers 
+                   && MaxPlayers == other.MaxPlayers
+                   && Coop == other.Coop 
+                   && DemoAvailable == other.DemoAvailable 
+                   && SupportsCloudSave == other.SupportsCloudSave
+                   && RemovedFromEshop == other.RemovedFromEshop 
+                   && VoucherPossible == other.VoucherPossible;
         }
 
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
-
-            hashCode.Add(Price);
+            hashCode.Add(ProductCode);
+            hashCode.Add(FsId);
+            hashCode.Add(Region);
+            hashCode.Add(Categories);
+            hashCode.Add(Languages);
             hashCode.Add(Nsuids);
-            hashCode.Add(Title);
-            hashCode.Add(Slug);
-            hashCode.Add(EshopUrl);
-            hashCode.Add(Description);
+            hashCode.Add(Colors);
+            hashCode.Add(Media);
+            hashCode.Add(PlayModes);
+            hashCode.Add(Price);
             hashCode.Add(ContentRating);
+            hashCode.Add(Description);
+            hashCode.Add(Popularity);
+            hashCode.Add(Title);
+            hashCode.Add(EshopUrl);
+            hashCode.Add(Slug);
             hashCode.Add(Publisher);
             hashCode.Add(Developer);
             hashCode.Add(ReleaseDate);
-            hashCode.Add(Categories);
             hashCode.Add(DownloadSize);
             hashCode.Add(MinPlayers);
             hashCode.Add(MaxPlayers);
             hashCode.Add(Coop);
             hashCode.Add(DemoAvailable);
-            hashCode.Add(Languages);
-            hashCode.Add(PlayModes);
             hashCode.Add(SupportsCloudSave);
             hashCode.Add(RemovedFromEshop);
             hashCode.Add(VoucherPossible);
-            hashCode.Add(Media);
-            hashCode.Add(Popularity);
-
             return hashCode.ToHashCode();
         }
 

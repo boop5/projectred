@@ -26,7 +26,7 @@ namespace Red.UnitTests.Application.JsonConverter
             foreach (var (input, expectation) in testCases)
             {
                 var serialized = JsonSerializer.Serialize(input, options);
-                var deserialized = JsonSerializer.Deserialize<EshopSalesStatus>(serialized, options);
+                var deserialized = JsonSerializer.Deserialize<EshopSalesStatus?>(serialized, options);
                 
                 Assert.NotNull(serialized);
                 Assert.NotNull(deserialized);

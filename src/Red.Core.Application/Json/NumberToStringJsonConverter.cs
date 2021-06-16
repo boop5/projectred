@@ -9,29 +9,62 @@ namespace Red.Core.Application.Json
     {
         public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TryGetInt16(out var n16))
+            if (reader.TokenType == JsonTokenType.Number)
             {
-                return n16.ToString(CultureInfo.InvariantCulture);
+                if (reader.TryGetInt16(out var n16))
+                {
+                    return n16.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (reader.TryGetInt32(out var n32))
+                {
+                    return n32.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (reader.TryGetInt64(out var n64))
+                {
+                    return n64.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (reader.TryGetDouble(out var d))
+                {
+                    return d.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (reader.TryGetDecimal(out var dec))
+                {
+                    return dec.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
-            if (reader.TryGetInt32(out var n32))
+            if (reader.TokenType == JsonTokenType.String)
             {
-                return n32.ToString(CultureInfo.InvariantCulture);
-            }
+                var s = reader.GetString();
 
-            if (reader.TryGetInt64(out var n64))
-            {
-                return n64.ToString(CultureInfo.InvariantCulture);
-            }
+                if (short.TryParse(s, out var n16))
+                {
+                    return n16.ToString(CultureInfo.InvariantCulture);
+                }
 
-            if (reader.TryGetDouble(out var d))
-            {
-                return d.ToString(CultureInfo.InvariantCulture);
-            }
+                if (int.TryParse(s, out var n32))
+                {
+                    return n32.ToString(CultureInfo.InvariantCulture);
+                }
 
-            if (reader.TryGetDecimal(out var dec))
-            {
-                return dec.ToString(CultureInfo.InvariantCulture);
+                if (long.TryParse(s, out var n64))
+                {
+                    return n64.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (double.TryParse(s, out var d))
+                {
+                    return d.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (decimal.TryParse(s, out var dec))
+                {
+                    return dec.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             return null;

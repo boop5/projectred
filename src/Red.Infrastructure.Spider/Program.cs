@@ -14,6 +14,7 @@ Host.CreateDefaultBuilder(args)
         {
             var cfg = hostContext.Configuration;
 
+            services.AddEntityMerger();
             services.AddAppSettings(hostContext.Configuration);
             services.AddUtilities();
             services.AddLoggingLayer();

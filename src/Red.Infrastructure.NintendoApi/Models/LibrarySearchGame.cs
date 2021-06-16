@@ -82,8 +82,8 @@ namespace Red.Infrastructure.NintendoApi.Models
         public string? Excerpt { get; init; }
 
         [JsonPropertyName("fs_id")]
-        [JsonConverter(typeof(NullableLongJsonConverter))]
-        public long? FsId { get; init; }
+        [JsonConverter(typeof(NumberToStringJsonConverter))]
+        public string? FsId { get; init; }
 
         [JsonPropertyName("game_category")]
         [JsonConverter(typeof(CsvArrayJsonConverter))]

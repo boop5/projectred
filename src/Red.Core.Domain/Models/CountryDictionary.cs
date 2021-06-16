@@ -8,7 +8,7 @@ namespace Red.Core.Domain.Models
     {
         private sealed class Country
         {
-            public string Name { get; init; } = "";
+            public string Name { get; private init; } = "";
 
             public static Country New(string name)
             {
@@ -105,5 +105,24 @@ namespace Red.Core.Domain.Models
         }
 
         #endregion
+
+        public CountryDictionary<T> Merge(CountryDictionary<T> other)
+        {
+            var newDict = New(ToDictionary());
+
+            foreach (var key in other.Keys)
+            {
+                if (newDict[key] == null)
+                {
+                    newDict[key] = other[key];
+                }
+                else if (!newDict[key]!.Equals(other[key]))
+                {
+                    newDict[key] = other[key];
+                }
+            }
+
+            return newDict;
+        }
     }
 }

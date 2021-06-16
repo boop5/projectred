@@ -16,7 +16,10 @@ namespace Red.Infrastructure.Utilities
 
             // remove "for nintendo switch"
             output = Regex.Replace(output, @"for[\s]+nintendo[\s]+switch", string.Empty, RegexOptions.IgnoreCase);
+
+            // execute base 
             output = base.Build(output);
+
 
             return output;
         }

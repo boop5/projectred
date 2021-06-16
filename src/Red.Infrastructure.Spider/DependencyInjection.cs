@@ -1,10 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Red.Core.Application.Interfaces;
 
 namespace Red.Infrastructure.Spider
 {
     internal static class DependencyInjection
     {
+        public static IServiceCollection AddEntityMerger(this IServiceCollection services)
+        {
+            services.AddTransient<ISwitchGameMerger, SwitchGameMerger>();
+
+            return services;
+        }
+
         public static IServiceCollection AddAppSettings(this IServiceCollection services, IConfiguration configuration)
         {
             var appSettings = new AppSettings();
