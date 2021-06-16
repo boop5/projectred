@@ -92,6 +92,20 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
                        x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>());
+
+            builder.Property(x => x.EshopUrl)
+                   .HasDefaultValue(new CountryDictionary<string>());
+            builder.Property(x => x.EshopUrl)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>());
+
+            builder.Property(x => x.Popularity)
+                   .HasDefaultValue(new CountryDictionary<int>());
+            builder.Property(x => x.Popularity)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<int>>(x, serializerOptions) ?? new CountryDictionary<int>());
         }
 
         private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)

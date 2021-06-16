@@ -10,6 +10,7 @@ namespace Red.Core.Domain.Models
         public List<HexColor> Colors { get; init; } = new(0);
         public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
         public CountryDictionary<string> Description { get; init; } = new();
+        public CountryDictionary<string> EshopUrl { get; init; } = new();
         public string? FsId { get; init; }
         public List<string> Languages { get; init; } = new(0);
 
@@ -19,7 +20,7 @@ namespace Red.Core.Domain.Models
 
         /// <summary>Meant to use to sort search results.</summary>
         /// <remarks>Higher numbers mean less popularity.</remarks>
-        public int Popularity { get; init; } = int.MaxValue;
+        public CountryDictionary<int> Popularity { get; init; } = new();
 
         public CountryDictionary<SwitchGamePriceDetails> Price { get; init; } = new();
         public string ProductCode { get; init; } = "";
@@ -28,7 +29,6 @@ namespace Red.Core.Domain.Models
         #region Optional
 
         public string? Title { get; init; }
-        public string? EshopUrl { get; init; }
         public string? Slug { get; init; }
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
@@ -68,11 +68,11 @@ namespace Red.Core.Domain.Models
                    && Media.Equals(other.Media) 
                    && PlayModes.Equals(other.PlayModes)
                    && Price.Equals(other.Price) 
+                   && EshopUrl.Equals(other.EshopUrl) 
                    && ContentRating.Equals(other.ContentRating) 
                    && Description.Equals(other.Description)
                    && Popularity == other.Popularity 
                    && Title == other.Title 
-                   && EshopUrl == other.EshopUrl 
                    && Slug == other.Slug
                    && Publisher == other.Publisher 
                    && Developer == other.Developer 

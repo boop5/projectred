@@ -48,6 +48,12 @@ namespace Red.Infrastructure.NintendoApi
                 description[culture.TwoLetterISOLanguageName] = game.Excerpt;
             }
 
+            var eshopUrl = new CountryDictionary<string>();
+            if (string.IsNullOrWhiteSpace(game.Url))
+            {
+                eshopUrl[region] = game.Url;
+            }
+
             return new()
             {
                 Nsuids = game.Nsuids ?? new List<string>(),
@@ -60,7 +66,7 @@ namespace Red.Infrastructure.NintendoApi
                     Tv = game.TvMode == true
                 },
                 ContentRating = contentRating,
-                EshopUrl = game.Url,
+                EshopUrl = eshopUrl,
                 Coop = game.CoopPlay,
                 DemoAvailable = game.DemoAvailable,
                 Developer = game.Developer,
@@ -69,7 +75,7 @@ namespace Red.Infrastructure.NintendoApi
                 Description = description,
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
-                Popularity = game.Popularity ?? 0,
+                Popularity = new CountryDictionary<int>{[region] = game.Popularity ?? int.MaxValue},
                 ReleaseDate = game.ReleaseDate,
                 RemovedFromEshop = game.RemovedFromEshop,
                 Title = game.Title,

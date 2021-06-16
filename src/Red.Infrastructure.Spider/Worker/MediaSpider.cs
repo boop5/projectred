@@ -13,8 +13,11 @@ using Jint.Native.Array;
 using Jint.Native.Object;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
+using Red.Infrastructure.Spider.Settings;
+
 #pragma warning disable
 
 
@@ -285,45 +288,49 @@ namespace Red.Infrastructure.Spider.Worker
 
     internal sealed class MediaSpider : Spider
     {
+        private readonly WorkerSettings _configuration;
         private readonly IServiceProvider _serviceProvider;
 
         public MediaSpider(IAppLogger<MediaSpider> log,
-                                MediaSpiderConfiguration configuration,
+                                WorkerSettings configuration,
                                 IServiceProvider serviceProvider)
-            : base(log, configuration)
+            : base(log, configuration.MediaSpider)
         {
+            _configuration = configuration;
             _serviceProvider = serviceProvider;
         }
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
-            var gs = await repo.Get()
-                               .Select(
-                                   x => new SwitchGame
-                                   {
-                                       FsId = x.FsId,
-                                       Region = x.Region,
-                                       Media = x.Media,
-                                       EshopUrl = x.EshopUrl
-                                   })
-                               .ToListAsync();
-            var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl))
-                         // .Where(x => x.Media.LastUpdated < DateTime.Today)
-                         .OrderBy(x => x.FsId)
-                         .Select(
-                             x => new ScreenshotDto
-                             {
-                                 EshopUrl = x.EshopUrl!,
-                                 Pictures = x.Media,
-                                 FsId = x.FsId,
-                                 Region = x.Region
-                             })
-                         .ToList();
+            foreach (var culture in _configuration.Cultures)
+            {
+                ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+                var gs = await repo.Get()
+                                   .Select(
+                                       x => new SwitchGame
+                                       {
+                                           FsId = x.FsId,
+                                           Region = x.Region,
+                                           Media = x.Media,
+                                           EshopUrl = x.EshopUrl
+                                       })
+                                   .ToListAsync();
+                var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl[culture.GetTwoLetterISORegionName()]))
+                             // .Where(x => x.Media.LastUpdated < DateTime.Today)
+                             .OrderBy(x => x.FsId)
+                             .Select(
+                                 x => new ScreenshotDto
+                                 {
+                                     EshopUrl = x.EshopUrl[culture.GetTwoLetterISORegionName()]!,
+                                     Pictures = x.Media,
+                                     FsId = x.FsId,
+                                     Region = x.Region
+                                 })
+                             .ToList();
 
-            // await Task.WhenAll(dtos.ChunkBy(500).Select(UpdateScreenshots).ToList());
-            Log.LogWarning($"UPDATE {dtos.Count} games");
-            await UpdateScreenshots(dtos);
+                Log.LogWarning($"UPDATE {dtos.Count} games");
+                await UpdateScreenshots(dtos);
+            }
         }
 
         private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)

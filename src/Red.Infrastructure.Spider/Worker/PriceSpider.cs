@@ -8,22 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
+using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider.Worker
 {
     internal sealed class PriceSpider : Spider
     {
+        private readonly WorkerSettings _configuration;
         private readonly IEshop _eshop;
         private readonly ISwitchGameMerger _gameMerger;
         private readonly ISwitchGameRepositoryFactory _repoFactory;
 
         public PriceSpider(IAppLogger<PriceSpider> log,
-                           PriceSpiderConfiguration configuration,
+                           WorkerSettings configuration,
                            IEshop eshop,
                            ISwitchGameMerger gameMerger,
                            ISwitchGameRepositoryFactory repoFactory)
-            : base(log, configuration)
+            : base(log, configuration.PriceSpider)
         {
+            _configuration = configuration;
             _eshop = eshop;
             _gameMerger = gameMerger;
             _repoFactory = repoFactory;
@@ -46,7 +49,7 @@ namespace Red.Infrastructure.Spider.Worker
                                           .ToListAsync();
 
             // todo: what are we gonna do about games with multiple nsuids?
-            return gamesToUpdate.Where(x => x.Nsuids.Count == 1)
+            return gamesToUpdate.Where(x => x.Nsuids.Any())
                                 // todo: how to handle different games with the same nsuid? excluded for now
                                 .DistinctBy(x => x.Nsuids[0])
                                 .ToList();
@@ -54,18 +57,18 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            // todo: use proper country/locale
-            var culture = new CultureInfo("en-DE");
-            var gamesToUpdate = await GetGamesToUpdate();
-            var chunks = gamesToUpdate.ChunkBy(50).ToList();
-            // todo: move "processChunksAtOnce" to appsettings
-            var processChunksAtOnce = 10;
-
-            foreach (var groupOfChunks in chunks.ChunkBy(processChunksAtOnce))
+            foreach (var culture in _configuration.Cultures)
             {
-                var tasks = groupOfChunks.Select(x => UpdateGames(culture, x.ToList()));
+                Log.LogDebug("Process {culture}", culture);
+                var gamesToUpdate = await GetGamesToUpdate();
+                var chunks = gamesToUpdate.ChunkBy(50).ToList();
 
-                await Task.WhenAll(tasks);
+                foreach (var groupOfChunks in chunks.ChunkBy(_configuration.PriceSpider.ChunkCount))
+                {
+                    var tasks = groupOfChunks.Select(x => UpdateGames(culture, x.ToList()));
+
+                    await Task.WhenAll(tasks);
+                }
             }
         }
 
@@ -91,9 +94,7 @@ namespace Red.Infrastructure.Spider.Worker
             try
             {
                 var repo = _repoFactory.Create();
-             
-                // todo: cant use single when we allow games with multiple nsuids - see above
-                var game = games.Single(x => x.Nsuids.Contains(price.Nsuid));
+                var game = games.First(x => x.Nsuids.Contains(price.Nsuid));
                 var entity = (await repo.GetByFsId(game.FsId!))!;
                 var merged = _gameMerger.MergePrice(culture, entity, price);
 

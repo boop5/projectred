@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
+using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider.Worker
 {

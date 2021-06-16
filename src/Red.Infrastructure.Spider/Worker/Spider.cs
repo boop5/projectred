@@ -1,6 +1,7 @@
 ﻿using System;
 using Red.Core.Application;
 using Red.Core.Application.Interfaces;
+using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider.Worker
 {

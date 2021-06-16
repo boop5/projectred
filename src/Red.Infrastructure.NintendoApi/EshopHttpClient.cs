@@ -24,6 +24,7 @@ namespace Red.Infrastructure.NintendoApi
 
         public async Task<T?> GetAs<T>(string url) where T : class
         {
+            Log.LogTrace("Query {url}", url);
             var response = await GetBody(url);
 
             if (response != null)

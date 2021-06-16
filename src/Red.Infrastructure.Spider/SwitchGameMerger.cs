@@ -46,14 +46,14 @@ namespace Red.Infrastructure.Spider
                 return t;
             }
 
-            if (!t.Price.Equals(s.Price))
+            if (!t.Price.Equals(s.Price) && !Equals(s.Price, new CountryDictionary<SwitchGamePriceDetails>()))
             {
                 Log.LogCritical("Price actually should not be different when merging the library.. {targetEntity} {sourceEntity}", t, s);
                 Debugger.Break();
                 return t;
             }
 
-            if (!t.Media.Equals(s.Media))
+            if (!t.Media.Equals(s.Media) && !Equals(s.Media, SwitchGameMedia.Default))
             {
                 Log.LogCritical("Media actually should not be different when merging the library.. {targetEntity} {sourceEntity}", t, s);
                 Debugger.Break();
@@ -128,6 +128,9 @@ namespace Red.Infrastructure.Spider
             // MERGE DESCRIPTION
             var description = t.Description.Merge(s.Description);
 
+            // MERGE ESHOPURL
+            var eshopUrl = t.EshopUrl.Merge(s.EshopUrl);
+
             // MERGE POPULARITY
             var popularity = t.Popularity;
             if (t.Popularity != s.Popularity)
@@ -145,7 +148,6 @@ namespace Red.Infrastructure.Spider
                 slug = s.Slug;
             }
 
-            var eshopUrl = PickValue(x => x.EshopUrl, t, s);
             var publisher = PickValue(x => x.Publisher, t, s);
             var developer = PickValue(x => x.Developer, t, s);
             var releaseDate = PickValue(x => x.ReleaseDate, t, s);
@@ -187,7 +189,7 @@ namespace Red.Infrastructure.Spider
             };
 
             var diffBuilder = new ObjectDiffBuilder();
-            var diff = diffBuilder.BuildText(t, s);
+            var diff = diffBuilder.BuildText(t, result);
 
             if (diff != null)
             {

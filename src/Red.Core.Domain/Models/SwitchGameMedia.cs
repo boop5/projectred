@@ -6,6 +6,8 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGameMedia
     {
+        public static SwitchGameMedia Default { get; } = new();
+      
         public ImageDetail? Cover { get; init; }
         public ImageDetail? HeroBanner { get; init; }
         public DateTime? LastUpdated { get; init; }

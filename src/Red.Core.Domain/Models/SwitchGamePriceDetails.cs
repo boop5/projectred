@@ -5,6 +5,8 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGamePriceDetails
     {
+        public static SwitchGamePriceDetails Default { get; } = new();
+       
         public Price AllTimeHigh { get; init; } = new();
         public Price AllTimeLow { get; init; } = new();
         public List<DatedPrice> History { get; init; } = new();

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
+using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider.Worker
 {
@@ -14,14 +15,16 @@ namespace Red.Infrastructure.Spider.Worker
         private readonly IEshop _eshop;
         private readonly ISwitchGameMerger _gameMerger;
         private readonly ISwitchGameRepositoryFactory _repoFactory;
+        private readonly WorkerSettings _configuration;
 
         public LibrarySpider(IAppLogger<LibrarySpider> log,
-                             LibrarySpiderConfiguration configuration,
+                             WorkerSettings configuration,
                              ISwitchGameMerger gameMerger,
                              ISwitchGameRepositoryFactory repoFactory,
                              IEshop eshop)
-            : base(log, configuration)
+            : base(log, configuration.LibrarySpider)
         {
+            _configuration = configuration;
             _gameMerger = gameMerger;
             _repoFactory = repoFactory;
             _eshop = eshop;
@@ -42,21 +45,22 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            // todo: use proper country/locale
-            var queries = await BuildQueries(new CultureInfo("en-DE"), 200);
-            var tasks = queries.Select(ProcessQuery);
+            foreach (var culture in _configuration.Cultures)
+            {
+                var queries = await BuildQueries(culture, _configuration.LibrarySpider.QuerySize);
+                var tasks = queries.Select(ProcessQuery);
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
         }
 
         private async Task ProcessQuery(EshopGameQuery query)
         {
             try
             {
+                var repo = _repoFactory.Create();
                 var games = await _eshop.SearchGames(query);
                 Log.LogDebug("Process {count} games", games.Count);
-
-                var repo = _repoFactory.Create();
 
                 foreach (var game in games)
                 {

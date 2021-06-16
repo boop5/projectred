@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Red.Core.Application.Interfaces;
+using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider
 {
@@ -18,31 +19,12 @@ namespace Red.Infrastructure.Spider
             var appSettings = new AppSettings();
             configuration.Bind(appSettings);
 
-            var defaultDelay = 60;
-            var defaultInterval = 60;
-            services.AddSingleton(new LibrarySpiderConfiguration
-            {
-                Interval = appSettings.Workers["LibrarySpider"]?.Interval ?? defaultInterval,
-                Delay = appSettings.Workers["LibrarySpider"]?.Delay ?? defaultDelay
-            });
-
-            services.AddSingleton(new PriceSpiderConfiguration
-            {
-                Interval = appSettings.Workers["PriceSpider"]?.Interval ?? defaultInterval,
-                Delay = appSettings.Workers["PriceSpider"]?.Delay ?? defaultDelay
-            });
-
-            services.AddSingleton(new SalesSpiderConfiguration
-            {
-                Interval = appSettings.Workers["SalesSpider"]?.Interval ?? defaultInterval,
-                Delay = appSettings.Workers["SalesSpider"]?.Delay ?? defaultDelay
-            });
-
-            services.AddSingleton(new MediaSpiderConfiguration
-            {
-                Interval = appSettings.Workers["MediaSpider"]?.Interval ?? defaultInterval,
-                Delay = appSettings.Workers["MediaSpider"]?.Delay ?? defaultDelay
-            });
+            services.AddSingleton(appSettings);
+            services.AddSingleton(appSettings.Workers);
+            services.AddSingleton(appSettings.Workers.LibrarySpider);
+            services.AddSingleton(appSettings.Workers.MediaSpider);
+            services.AddSingleton(appSettings.Workers.PriceSpider);
+            services.AddSingleton(appSettings.Workers.SalesSpider);
 
             return services;
         }
