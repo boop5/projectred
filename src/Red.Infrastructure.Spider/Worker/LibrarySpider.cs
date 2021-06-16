@@ -69,7 +69,7 @@ namespace Red.Infrastructure.Spider.Worker
                     }
                     else
                     {
-                        var updatedEntity = _gameMerger.Merge(dbEntity, game);
+                        var updatedEntity = _gameMerger.MergeLibrary(dbEntity, game);
 
                         if (!Equals(updatedEntity, dbEntity))
                         {

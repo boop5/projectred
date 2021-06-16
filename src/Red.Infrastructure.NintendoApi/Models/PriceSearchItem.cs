@@ -25,5 +25,8 @@ namespace Red.Infrastructure.NintendoApi.Models
 
         [JsonPropertyName("sales_status")]
         public string? SalesStatus { get; init; }
+
+        [JsonPropertyName("is_download_ready")]
+        public bool? IsDownloadReady { get; init; }
     }
 }

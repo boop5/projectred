@@ -1,14 +1,11 @@
-﻿using Red.Core.Domain.Models;
+﻿using System.Globalization;
+using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Interfaces
 {
-    public interface IEntityMerger<T> where T : class
+    public interface ISwitchGameMerger
     {
-        T Merge(T targetEntity, T sourceEntity);
-    }
-
-    public interface ISwitchGameMerger : IEntityMerger<SwitchGame>
-    {
-
+        SwitchGame MergeLibrary(SwitchGame targetEntity, SwitchGame sourceEntity);
+        SwitchGame MergePrice(CultureInfo culture, SwitchGame targetEntity, SwitchGamePrice price);
     }
 }

@@ -1,78 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using System.Text;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
-using Red.Core.Domain;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider
 {
-    internal sealed class ObjectDiffBuilder
-    {
-        private string BuildUpdateString(object? a, object? b)
-        {
-            var stringA = Stringify.Build(a);
-            var stringB = Stringify.Build(b);
-
-            return $"'{stringA}' -> '{stringB}'";
-        }
-
-        private bool AreEqual(object? a, object? b)
-        {
-            if(a == null && b == null)
-            {
-                return true;
-            }
-
-            if (a is IEnumerable<object> enumerableA && b is IEnumerable<object> enumerableB)
-            {
-                return enumerableA.SequenceEqual(enumerableB);
-            }
-
-            return Equals(a, b);
-        }
-
-        public string? BuildText(object a, object b)
-        {
-            if (a.GetType() != b.GetType())
-            {
-                // todo: LogWarning
-                return null;
-            }
-
-            if (AreEqual(a, b))
-            {
-                return null;
-            }
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"Merged two entities '{a.GetType().Name}'");
-
-            var hasUpdate = false;
-            foreach (var propertyInfo in a.GetType().GetProperties().Where(x => x.CanRead))
-            {
-                var valueA = propertyInfo.GetValue(a);
-                var valueB = propertyInfo.GetValue(b);
-
-                if(!AreEqual(valueA, valueB))
-                {
-                    hasUpdate = true;
-                    sb.AppendLine($"{propertyInfo.Name}: {BuildUpdateString(valueA, valueB)}");
-                }
-            }
-
-            if (hasUpdate)
-            {
-                return sb.ToString();
-            }
-
-            return null;
-        }
-    }
-
     internal sealed class SwitchGameMerger : ISwitchGameMerger
     {
         private IAppLogger<SwitchGameMerger> Log { get; }
@@ -82,7 +18,7 @@ namespace Red.Infrastructure.Spider
             Log = log;
         }
 
-        public SwitchGame Merge(SwitchGame t, SwitchGame s)
+        public SwitchGame MergeLibrary(SwitchGame t, SwitchGame s)
         {
             // CHECK ABNORMALITIES
             if (!string.Equals(t.ProductCode, s.ProductCode, StringComparison.InvariantCultureIgnoreCase))
@@ -91,15 +27,16 @@ namespace Red.Infrastructure.Spider
 
                 if (string.Equals(t.Title, s.Title, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Log.LogCritical("ProductCode differs but the titles are equal. "
-                                    + "Might be a duplicated name (ie Minefield) "
-                                    + "- please check this manually! {targetEntity} {sourceEntity}", t, s);
+                    Log.LogCritical(
+                        "ProductCode differs but the titles are equal. "
+                        + "Might be a duplicated name (ie Minefield) "
+                        + "- please check this manually! {targetEntity} {sourceEntity}",
+                        t,
+                        s);
                     return t;
                 }
-                else
-                {
-                    Log.LogCritical("ProductCode differs - please check this manually! {targetEntity} {sourceEntity}", t, s);
-                }
+
+                Log.LogCritical("ProductCode differs - please check this manually! {targetEntity} {sourceEntity}", t, s);
             }
 
             if (!string.Equals(t.Region, s.Region, StringComparison.InvariantCultureIgnoreCase))
@@ -252,7 +189,7 @@ namespace Red.Infrastructure.Spider
             var diffBuilder = new ObjectDiffBuilder();
             var diff = diffBuilder.BuildText(t, s);
 
-            if(diff != null)
+            if (diff != null)
             {
                 Log.LogDebug(diff);
             }
@@ -288,5 +225,20 @@ namespace Red.Infrastructure.Spider
 
             return result;
         }
+
+
+       
+        public SwitchGame MergePrice(CultureInfo culture, SwitchGame game, SwitchGamePrice price)
+        {
+            var updatedEntity = new PriceMerger(culture, game, price).MergePrice();
+
+            if (!game.Price.Equals(updatedEntity.Price))
+            {
+                return updatedEntity;
+            }
+
+            return game;
+        }
+
     }
 }

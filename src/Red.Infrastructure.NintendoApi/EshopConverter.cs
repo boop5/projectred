@@ -154,7 +154,8 @@ namespace Red.Infrastructure.NintendoApi
                 RegularPrice = regularPrice,
                 CurrentPrice = currentPrice,
                 Currency = price.RegularPrice.Currency,
-                Discounted = currentPrice < regularPrice
+                Discounted = currentPrice < regularPrice,
+                // todo: add price.DiscountPrice.Start, price.DiscountPrice.End
             };
         }
 
