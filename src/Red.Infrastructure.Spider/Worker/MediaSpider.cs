@@ -293,7 +293,7 @@ namespace Red.Infrastructure.Spider.Worker
                                .Select(
                                    x => new SwitchGame
                                    {
-                                       ProductCode = x.ProductCode,
+                                       FsId = x.FsId,
                                        Region = x.Region,
                                        Media = x.Media,
                                        EshopUrl = x.EshopUrl
@@ -301,13 +301,13 @@ namespace Red.Infrastructure.Spider.Worker
                                .ToListAsync();
             var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl))
                          // .Where(x => x.Media.LastUpdated < DateTime.Today)
-                         .OrderBy(x => x.ProductCode)
+                         .OrderBy(x => x.FsId)
                          .Select(
                              x => new ScreenshotDto
                              {
                                  EshopUrl = x.EshopUrl!,
                                  Pictures = x.Media,
-                                 ProductCode = x.ProductCode,
+                                 FsId = x.FsId,
                                  Region = x.Region
                              })
                          .ToList();
@@ -324,7 +324,6 @@ namespace Red.Infrastructure.Spider.Worker
             foreach (var dto in chunk)
             {
                 var start = DateTime.UtcNow;
-                Log.LogInformation(dto.ProductCode);
 
                 try
                 {
@@ -333,7 +332,7 @@ namespace Red.Infrastructure.Spider.Worker
                     var initialized = await loader.Init(url);
 
                     if (!initialized) continue;
-                    var entity = await repo.GetByProductCode(dto.ProductCode);
+                    var entity = await repo.GetByFsId(dto.FsId);
 
                     var updatedEntity = entity with
                     {
@@ -365,7 +364,7 @@ namespace Red.Infrastructure.Spider.Worker
         {
             public string EshopUrl { get; init; } = "";
             public SwitchGameMedia Pictures { get; init; } = new();
-            public string ProductCode { get; init; } = "";
+            public string FsId { get; init; } = "";
             public string Region { get; init; } = "";
         }
     }

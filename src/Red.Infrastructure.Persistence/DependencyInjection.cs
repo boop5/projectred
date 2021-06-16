@@ -16,6 +16,7 @@ namespace Red.Infrastructure.Persistence
             services.AddDbContextFactory<LibraryContext>(o => BuildDbContextOptions(connectionString, o));
             services.AddDbContext<LibraryContext>(o => BuildDbContextOptions(connectionString, o));
             services.AddTransient<ISwitchGameRepository, SwitchGameRepository>();
+            services.AddTransient<ISwitchGameRepositoryFactory, SwitchGameRepositoryFactory>();
             services.AddTransient<DbInitializer>();
 
             var dbInitializer = services.BuildServiceProvider().GetRequiredService<DbInitializer>();

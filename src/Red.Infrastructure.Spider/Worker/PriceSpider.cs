@@ -74,7 +74,7 @@ namespace Red.Infrastructure.Spider.Worker
 
         private async Task UpdatePrice(CultureInfo culture, SwitchGame game, SwitchGamePrice price, ISwitchGameRepository repo)
         {
-            var entity = (await repo.GetByProductCode(game.ProductCode))!;
+            var entity = (await repo.GetByFsId(game.FsId))!;
             var country = culture.GetTwoLetterISORegionName();
             var lastPrice = game.Price.History[country]?.OrderBy(x => x.Date).LastOrDefault();
             var ctx = UpdateContext.New(culture, game, lastPrice, price);

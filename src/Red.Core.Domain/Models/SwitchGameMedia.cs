@@ -29,7 +29,7 @@ namespace Red.Core.Domain.Models
             return Screenshots.SequenceEqual(other.Screenshots)
                    && Videos.SequenceEqual(other.Videos)
                    && Equals(HeroBanner, other.HeroBanner)
-                   && Cover == other.Cover
+                   && Equals(Cover, other.Cover)
                    && Nullable.Equals(LastUpdated, other.LastUpdated);
         }
 

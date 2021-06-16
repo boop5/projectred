@@ -15,50 +15,35 @@ namespace Red.Infrastructure.Persistence
         {
         }
 
-        public async Task<SwitchGame?> GetMatchingGame(SwitchGame game, CultureInfo culture)
+        public Task<SwitchGame?> GetMatchingGame(SwitchGame game, CultureInfo culture)
         {
-            var byProductCode = await GetByProductCode(game.ProductCode);
-
-            if (byProductCode == null)
-            {
-                // todo: log warning
-
-                var byTitle = await Get().Where(x => x.Title == game.Title || x.Slug == game.Slug).ToListAsync();
-
-                if (byTitle.Count != 1)
-                {
-                    // todo: log warning
-
-                    if (game.Nsuids.Count == 1)
-                    {
-                        var byNsuid = await GetByNsuid(game.Nsuids[0]);
-
-                        if (byNsuid == null)
-                        {
-                            // todo: log warning
-                            return null;
-                        }
-
-                        return byNsuid;
-                    }
-
-                    return null;
-                }
-
-                return byTitle.Single();
-            }
-
-            return byProductCode;
+            return GetByFsId(game.FsId);
         }
 
-        public async Task<SwitchGame?> GetByProductCode(string productCode)
+        public async Task<SwitchGame?> GetByFsId(string? fsId)
         {
-            return await Get().SingleOrDefaultAsync(x => x.ProductCode == productCode);
+            if (!string.IsNullOrWhiteSpace(fsId))
+            {
+                var byFsId = await Get().Where(x => x.FsId == fsId).ToListAsync();
+
+                if (byFsId.Count > 1)
+                {
+                    // todo: log warning
+                }
+
+                if (byFsId.Count == 1)
+                {
+                    return byFsId.Single();
+                }
+            }
+
+            return null;
         }
 
         public async Task<SwitchGame?> GetByNsuid(string nsuid)
         {
-            var allEntities = await Get().Select(x => new {x.ProductCode, x.Nsuids}).ToListAsync();
+            // todo: check region
+            var allEntities = await Get().Select(x => new {x.FsId, x.Nsuids}).ToListAsync();
             var matches = allEntities.Where(x => x.Nsuids.Contains(nsuid)).ToList();
 
             if (matches.Count > 1)
@@ -72,12 +57,12 @@ namespace Red.Infrastructure.Persistence
                 return null;
             }
 
-            return await GetByProductCode(matches.Single().ProductCode);
+            return await GetByFsId(matches.Single().FsId);
         }
 
-        public async Task<SwitchGame?> UpdateAsync(string productCode, Func<SwitchGame, SwitchGame> updateFunc)
+        public async Task<SwitchGame?> UpdateAsync(string fsId, Func<SwitchGame, SwitchGame> updateFunc)
         {
-            var entity = await GetByProductCode(productCode);
+            var entity = await GetByFsId(fsId);
             
             if (entity == null)
             {
