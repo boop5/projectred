@@ -41,7 +41,6 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 var task = ProcessQuery(new EshopGameQuery(culture) {Index = i, Offset = increment});
                 tasks.Add(task);
-                break;
             }
 
             await Task.WhenAll(tasks);

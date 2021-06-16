@@ -6,75 +6,66 @@ namespace Red.Core.Domain.Models
 {
     public sealed record CountryDictionary<T>
     {
-        private sealed class Country
-        {
-            public string Name { get; private init; } = "";
+        private IDictionary<string, T> Dictionary { get; init; } = new Dictionary<string, T>();
 
-            public static Country New(string name)
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    throw new ArgumentException();
-                }
-
-                return new Country {Name = name};
-            }
-
-            private bool Equals(Country other)
-            {
-                return string.Equals(Name, other.Name, StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            public override bool Equals(object? obj)
-            {
-                return ReferenceEquals(this, obj) || obj is Country other && Equals(other);
-            }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
-        }
-
-        private IDictionary<Country, T> Dictionary { get; init; } = new Dictionary<Country, T>();
-
-        public IReadOnlyCollection<string> Keys => Dictionary.Keys.Select(x => x.Name).ToList();
-
-        public IReadOnlyDictionary<string, T> ToDictionary() => Dictionary.ToDictionary(x => x.Key.Name, x => x.Value);
-
-        public T? this[string country]
+        public T? this[string key]
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(country))
+                if (string.IsNullOrWhiteSpace(key))
                 {
                     return default;
                 }
 
-                var key = Dictionary.Keys.SingleOrDefault(x => string.Equals(country, x.Name, StringComparison.InvariantCultureIgnoreCase));
+                var actualKey = Dictionary.Keys.SingleOrDefault(
+                    x =>
+                        string.Equals(key, x, StringComparison.InvariantCultureIgnoreCase));
 
-                if (key == null)
+                if (actualKey == null)
                 {
                     return default;
                 }
 
-                return Dictionary[key];
+                return Dictionary[actualKey];
             }
             set
             {
-                if (!string.IsNullOrWhiteSpace(country) && value != null)
+                if (!string.IsNullOrWhiteSpace(key) && value != null)
                 {
-                    var key = Country.New(country);
                     Dictionary[key] = value;
                 }
             }
         }
 
+        public IReadOnlyCollection<string> Keys => Dictionary.Keys.ToList();
+
+        public CountryDictionary<T> Merge(CountryDictionary<T> other)
+        {
+            var newDict = New(ToDictionary());
+
+            foreach (var key in other.Keys)
+            {
+                if (newDict[key] == null)
+                {
+                    newDict[key] = other[key];
+                }
+                else if (!newDict[key]!.Equals(other[key]))
+                {
+                    newDict[key] = other[key];
+                }
+            }
+
+            return newDict;
+        }
+
         public static CountryDictionary<T> New(IReadOnlyDictionary<string, T> dictionary)
         {
-            var newDictionary = dictionary
-                .ToDictionary(x => Country.New(x.Key), x => x.Value);
-            return new() {Dictionary = newDictionary};
+            return new() {Dictionary = dictionary.ToDictionary(x => x.Key, x => x.Value)};
+        }
+
+        public IReadOnlyDictionary<string, T> ToDictionary()
+        {
+            return Dictionary.ToDictionary(x => x.Key, x => x.Value);
         }
 
         #region Equality
@@ -106,23 +97,16 @@ namespace Red.Core.Domain.Models
 
         #endregion
 
-        public CountryDictionary<T> Merge(CountryDictionary<T> other)
+        /*public override string ToString()
         {
-            var newDict = New(ToDictionary());
+            var sb = new StringBuilder();
 
-            foreach (var key in other.Keys)
+            foreach (var key in Keys)
             {
-                if (newDict[key] == null)
-                {
-                    newDict[key] = other[key];
-                }
-                else if (!newDict[key]!.Equals(other[key]))
-                {
-                    newDict[key] = other[key];
-                }
+                sb.AppendLine($"{{\"{key}\" = {Stringify.Build(this[key])} }}");
             }
 
-            return newDict;
-        }
+            return sb.ToString();
+        }*/
     }
 }

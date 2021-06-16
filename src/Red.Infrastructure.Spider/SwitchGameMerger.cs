@@ -3,13 +3,77 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Red.Core.Application;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
 namespace Red.Infrastructure.Spider
 {
-    public sealed class SwitchGameMerger : ISwitchGameMerger
+    internal sealed class ObjectDiffBuilder
+    {
+        private string BuildUpdateString(object? a, object? b)
+        {
+            var stringA = Stringify.Build(a);
+            var stringB = Stringify.Build(b);
+
+            return $"'{stringA}' -> '{stringB}'";
+        }
+
+        private bool AreEqual(object? a, object? b)
+        {
+            if(a == null && b == null)
+            {
+                return true;
+            }
+
+            if (a is IEnumerable<object> enumerableA && b is IEnumerable<object> enumerableB)
+            {
+                return enumerableA.SequenceEqual(enumerableB);
+            }
+
+            return Equals(a, b);
+        }
+
+        public string? BuildText(object a, object b)
+        {
+            if (a.GetType() != b.GetType())
+            {
+                // todo: LogWarning
+                return null;
+            }
+
+            if (AreEqual(a, b))
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Merged two entities '{a.GetType().Name}'");
+
+            var hasUpdate = false;
+            foreach (var propertyInfo in a.GetType().GetProperties().Where(x => x.CanRead))
+            {
+                var valueA = propertyInfo.GetValue(a);
+                var valueB = propertyInfo.GetValue(b);
+
+                if(!AreEqual(valueA, valueB))
+                {
+                    hasUpdate = true;
+                    sb.AppendLine($"{propertyInfo.Name}: {BuildUpdateString(valueA, valueB)}");
+                }
+            }
+
+            if (hasUpdate)
+            {
+                return sb.ToString();
+            }
+
+            return null;
+        }
+    }
+
+    internal sealed class SwitchGameMerger : ISwitchGameMerger
     {
         private IAppLogger<SwitchGameMerger> Log { get; }
 
@@ -185,74 +249,15 @@ namespace Red.Infrastructure.Spider
                 VoucherPossible = voucherPossible
             };
 
-            LogUpdates(t, result);
+            var diffBuilder = new ObjectDiffBuilder();
+            var diff = diffBuilder.BuildText(t, s);
+
+            if(diff != null)
+            {
+                Log.LogDebug(diff);
+            }
 
             return result;
-        }
-
-
-        private string? BuildUpdateString(object? o)
-        {
-            if (o is IEnumerable<object> enumerable)
-            {
-                var values = string.Join(",", enumerable.Select(x => BuildUpdateString(x)));
-                return $"[{values}]";
-            }
-
-            return o?.ToString() ?? null;
-        }
-        private string BuildUpdateString(object? a, object? b)
-        {
-            var stringA = BuildUpdateString(a);
-            var stringB = BuildUpdateString(b);
-
-            if(string.IsNullOrWhiteSpace(stringA)) stringA= "NULL";
-            if(string.IsNullOrWhiteSpace(stringB)) stringB= "NULL";
-
-            return $"'{stringA}' -> '{stringB}'";
-        }
-
-        private void LogUpdates(object targetEntity, object mergedEntity)
-        {
-            if (targetEntity.GetType() != mergedEntity.GetType())
-            {
-                // todo: LogWarning
-                return;
-            }
-
-            if (Equals(targetEntity, mergedEntity))
-            {
-                return;
-            }
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"Merged two entities '{targetEntity.GetType().Name}'");
-
-            var hasUpdate = false;
-            foreach (var propertyInfo in targetEntity.GetType().GetProperties().Where(x => x.CanRead))
-            {
-                var targetValue = propertyInfo.GetValue(targetEntity);
-                var mergedValue = propertyInfo.GetValue(mergedEntity);
-
-                if (targetValue is IEnumerable<object> enumerableA && mergedValue is IEnumerable<object> enumerableB)
-                {
-                    if (!enumerableA.SequenceEqual(enumerableB))
-                    {
-                        hasUpdate = true;
-                        sb.AppendLine($"\t\t{propertyInfo.Name}: {BuildUpdateString(enumerableA, enumerableB)}");
-                    }
-                }
-                else if(!Equals(targetValue, mergedValue))
-                {
-                    hasUpdate = true;
-                    sb.AppendLine($"\t\t{propertyInfo.Name}: {BuildUpdateString(targetValue, mergedValue)}");
-                }
-            }
-
-            if (hasUpdate)
-            {
-                Log.LogDebug(sb.ToString());
-            }
         }
 
         private string? PickValue(Func<SwitchGame, string?> selector, SwitchGame a, SwitchGame b)
