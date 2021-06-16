@@ -197,6 +197,18 @@ namespace Red.Infrastructure.Spider
             return result;
         }
 
+        public SwitchGame MergePrice(CultureInfo culture, SwitchGame game, SwitchGamePrice price)
+        {
+            var updatedEntity = new PriceMerger(culture, game, price).MergePrice();
+
+            if (!game.Price.Equals(updatedEntity.Price))
+            {
+                return updatedEntity;
+            }
+
+            return game;
+        }
+
         private string? PickValue(Func<SwitchGame, string?> selector, SwitchGame a, SwitchGame b)
         {
             var valueA = selector(a);
@@ -225,20 +237,5 @@ namespace Red.Infrastructure.Spider
 
             return result;
         }
-
-
-       
-        public SwitchGame MergePrice(CultureInfo culture, SwitchGame game, SwitchGamePrice price)
-        {
-            var updatedEntity = new PriceMerger(culture, game, price).MergePrice();
-
-            if (!game.Price.Equals(updatedEntity.Price))
-            {
-                return updatedEntity;
-            }
-
-            return game;
-        }
-
     }
 }

@@ -27,15 +27,6 @@ namespace Red.Infrastructure.Spider.Worker
             _eshop = eshop;
         }
 
-        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
-        {
-            // todo: use proper country/locale
-            var queries = await BuildQueries(new CultureInfo("en-DE"), 200);
-            var tasks = queries.Select(ProcessQuery);
-
-            await Task.WhenAll(tasks);
-        }
-
         private async Task<IReadOnlyCollection<EshopGameQuery>> BuildQueries(CultureInfo culture, int querySize)
         {
             var end = await _eshop.GetTotalGames(culture);
@@ -49,45 +40,66 @@ namespace Red.Infrastructure.Spider.Worker
             return queries;
         }
 
+        protected override async Task LoopAsync(CancellationToken stoppingToken = default)
+        {
+            // todo: use proper country/locale
+            var queries = await BuildQueries(new CultureInfo("en-DE"), 200);
+            var tasks = queries.Select(ProcessQuery);
+
+            await Task.WhenAll(tasks);
+        }
+
         private async Task ProcessQuery(EshopGameQuery query)
         {
             try
             {
                 var games = await _eshop.SearchGames(query);
-                Log.LogInformation("Process {count} games", games.Count);
+                Log.LogDebug("Process {count} games", games.Count);
 
                 var repo = _repoFactory.Create();
 
                 foreach (var game in games)
                 {
-                    var dbEntity = await repo.GetMatchingGame(game, query.Culture);
-
-                    if (dbEntity == null)
-                    {
-                        // todo: handle slug issue (minefield ...)
-                        await repo.AddAsync(game);
-                    }
-                    else
-                    {
-                        var updatedEntity = _gameMerger.MergeLibrary(dbEntity, game);
-
-                        if (!Equals(updatedEntity, dbEntity))
-                        {
-                            Log.LogInformation(
-                                "Update existing Game \"{title}\" [{productCode}]",
-                                updatedEntity.Title ?? "",
-                                updatedEntity.ProductCode);
-                            await repo.UpdateAsync(updatedEntity);
-                        }
-                    }
+                    await UpdateGame(query.Culture, repo, game);
                 }
             }
             catch (Exception e)
             {
                 Log.LogWarning(e, "Failed to process query {query}", query);
             }
+        }
 
-            Log.LogInformation("Finished processing");
+        private async Task UpdateGame(CultureInfo culture, ISwitchGameRepository repo, SwitchGame game)
+        {
+            try
+            {
+                var dbEntity = await repo.GetMatchingGame(game, culture);
+
+                if (dbEntity == null)
+                {
+                    Log.LogInformation("Add new game {title} ({fsId})", game.Title ?? "", game.FsId ?? "");
+
+                    // todo: handle slug issue (minefield ...)
+                    await repo.AddAsync(game);
+                }
+                else
+                {
+                    var updatedEntity = _gameMerger.MergeLibrary(dbEntity, game);
+
+                    if (!Equals(updatedEntity, dbEntity))
+                    {
+                        Log.LogInformation(
+                            "Update existing Game \"{title}\" [{productCode}]",
+                            updatedEntity.Title ?? "",
+                            updatedEntity.ProductCode);
+                        await repo.UpdateAsync(updatedEntity);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to update game {game} ({fsId})", game.Title ?? "", game.FsId ?? "");
+            }
         }
     }
 }
