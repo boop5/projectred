@@ -6,12 +6,12 @@ namespace Red.Core.Domain.Models
 {
     public sealed record SwitchGame
     {
-        public List<string> Categories { get; init; } = new(0);
         public List<HexColor> Colors { get; init; } = new(0);
         public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
         public CountryDictionary<string> Description { get; init; } = new();
         public CountryDictionary<string> EshopUrl { get; init; } = new();
-        public string FsId { get; init; }
+        public CountryDictionary<List<string>> Categories { get; init; } = new();
+        public string FsId { get; init; } = "";
         public List<string> Languages { get; init; } = new(0);
         public CountryDictionary<SwitchGameMedia> Media { get; init; } = new();
         public List<string> Nsuids { get; init; } = new(0);
@@ -26,8 +26,8 @@ namespace Red.Core.Domain.Models
 
         #region Optional
 
-        public CountryDictionary<string> Title { get; init; }
-        public CountryDictionary<string> Slug { get; init; }
+        public CountryDictionary<string> Title { get; init; } = new();
+        public CountryDictionary<string> Slug { get; init; } = new();
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
         public DateTime? ReleaseDate { get; init; }
@@ -58,13 +58,13 @@ namespace Red.Core.Domain.Models
 
             return ProductCode == other.ProductCode
                    && FsId == other.FsId
-                   && Categories.SequenceEqual(other.Categories) 
                    && Languages.SequenceEqual(other.Languages) 
                    && Nsuids.SequenceEqual(other.Nsuids)
                    && Colors.SequenceEqual(other.Colors) 
                    && Media.Equals(other.Media) 
                    && PlayModes.Equals(other.PlayModes)
                    && Price.Equals(other.Price) 
+                   && Categories.Equals(other.Categories) 
                    && EshopUrl.Equals(other.EshopUrl) 
                    && ContentRating.Equals(other.ContentRating) 
                    && Description.Equals(other.Description)

@@ -40,12 +40,13 @@ namespace Red.Infrastructure.NintendoApi
         public SwitchGame ConvertToSwitchGame(CultureInfo culture, LibrarySearchGame game)
         {
             var region = culture.GetTwoLetterISORegionName();
+            var lang = culture.TwoLetterISOLanguageName;
             var contentRating = BuildContentRating(region, game);
             var description = new CountryDictionary<string>();
 
             if (!string.IsNullOrWhiteSpace(game.Excerpt))
             {
-                description[culture.TwoLetterISOLanguageName] = game.Excerpt;
+                description[lang] = game.Excerpt;
             }
 
             var eshopUrl = new CountryDictionary<string>();
@@ -66,13 +67,13 @@ namespace Red.Infrastructure.NintendoApi
             var title = new CountryDictionary<string>();
             if (!string.IsNullOrWhiteSpace(game.Title))
             {
-                title[region] = game.Title;
+                title[lang] = game.Title;
             }
 
             var slug = new CountryDictionary<string>();
             if (!string.IsNullOrWhiteSpace(game.Title))
             {
-                slug[region] = _slugBuilder.Build(game.Title);
+                slug[lang] = _slugBuilder.Build(game.Title);
             }
 
             var productCode = new CountryDictionary<string>();
@@ -82,11 +83,18 @@ namespace Red.Infrastructure.NintendoApi
                 productCode[region] = game.ProductCodeSS![0].Trim().Replace("-", "");
             }
 
+            var categories = new CountryDictionary<List<string>> {[lang] = new()};
+            if (game.GameCategories?.Any() == true)
+            {
+                // todo: move normalize logic to custom service or w/e
+                categories[lang] = game.GameCategories;
+            }
+
             return new()
             {
                 Nsuids = game.Nsuids ?? new List<string>(),
                 Languages = game.Languages ?? new List<string>(),
-                Categories = game.GameCategoriesPretty ?? new List<string>(),
+                Categories = categories,
                 PlayModes = new SwitchGamePlayModes()
                 {
                     Handheld = game.HandheldMode == true,

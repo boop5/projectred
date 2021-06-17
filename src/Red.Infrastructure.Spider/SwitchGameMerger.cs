@@ -42,13 +42,7 @@ namespace Red.Infrastructure.Spider
             }
 
             // MERGE CATEGORIES
-            IEnumerable<string> categories = t.Categories;
-            if (!t.Categories.SequenceEqual(s.Categories))
-            {
-                categories = t.Categories
-                              .Union(s.Categories)
-                              .DistinctBy(x => x.ToLowerInvariant());
-            }
+            var categories = t.Categories.Merge(s.Categories);
 
             // MERGE LANGUAGES
             IEnumerable<string> languages = t.Languages;
@@ -125,7 +119,7 @@ namespace Red.Infrastructure.Spider
             {
                 FsId = fsid,
                 ContentRating = contentRating,
-                Categories = categories.ToList(),
+                Categories = categories,
                 Languages = languages.ToList(),
                 Nsuids = nsuids.ToList(),
                 Colors = colors.ToList(),
@@ -148,13 +142,13 @@ namespace Red.Infrastructure.Spider
                 VoucherPossible = voucherPossible
             };
 
-            var diffBuilder = new ObjectDiffBuilder();
-            var diff = diffBuilder.BuildText(t, result);
-
-            if (diff != null)
-            {
-                Log.LogDebug(diff);
-            }
+            // var diffBuilder = new ObjectDiffBuilder();
+            // var diff = diffBuilder.BuildText(t, result);
+            // 
+            // if (diff != null)
+            // {
+            //     Log.LogTrace(diff);
+            // }
 
             return result;
         }

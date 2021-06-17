@@ -20,10 +20,6 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.FsId)
                    .HasName("PK_SwitchGame_FsID");
 
-            builder.HasIndex(x => x.ProductCode)
-                   .HasDatabaseName("IX_SwitchGameProductCode")
-                   .IsUnique();
-
             builder.HasIndex(x => x.Title)
                    .HasDatabaseName("IX_SwitchGameTitle");
 
@@ -31,15 +27,6 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .HasDatabaseName("IX_SwitchGameSlug");      
             
             // todo: add index for website filters (search by category, ..)
-
-            builder.Property(x => x.Categories)
-                   .HasConversion(
-                       x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>())
-                   .HasDefaultValue(new List<string>());
-            builder.Property(x => x.Categories)
-                   .Metadata
-                   .SetValueComparer(BuildValueComparer<string>());
 
             builder.Property(x => x.Media)
                    .HasConversion(
@@ -122,6 +109,12 @@ namespace Red.Infrastructure.Persistence.Configurations
                        x => JsonSerializer.Serialize(x, serializerOptions),
                        x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
                    .HasDefaultValue(new CountryDictionary<string>());
+
+            builder.Property(x => x.Categories)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<List<string>>>(x, serializerOptions) ?? new CountryDictionary<List<string>>())
+                   .HasDefaultValue(new CountryDictionary<List<string>>());
         }
 
         private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)
