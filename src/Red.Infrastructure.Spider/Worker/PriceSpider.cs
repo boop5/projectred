@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
@@ -32,35 +31,13 @@ namespace Red.Infrastructure.Spider.Worker
             _repoFactory = repoFactory;
         }
 
-        private async Task<List<SwitchGame>> GetGamesToUpdate()
-        {
-            var repo = _repoFactory.Create();
-            var gamesToUpdate = await repo.Get()
-                                          .OrderByDescending(x => x.ReleaseDate)
-                                          .Select(
-                                              x => new SwitchGame
-                                              {
-                                                  Nsuids = x.Nsuids,
-                                                  FsId = x.FsId,
-                                                  ProductCode = x.ProductCode,
-                                                  Price = x.Price,
-                                                  Title = x.Title
-                                              })
-                                          .ToListAsync();
-
-            // todo: what are we gonna do about games with multiple nsuids?
-            return gamesToUpdate.Where(x => x.Nsuids.Any())
-                                // todo: how to handle different games with the same nsuid? excluded for now
-                                .DistinctBy(x => x.Nsuids[0])
-                                .ToList();
-        }
-
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
             foreach (var culture in _configuration.Cultures)
             {
                 Log.LogDebug("Process {culture}", culture);
-                var gamesToUpdate = await GetGamesToUpdate();
+                await using var repo = _repoFactory.Create();
+                var gamesToUpdate = await repo.GetGamesForPriceQuery();
                 var chunks = gamesToUpdate.ChunkBy(50).ToList();
 
                 foreach (var groupOfChunks in chunks.ChunkBy(_configuration.PriceSpider.ChunkCount))

@@ -100,7 +100,7 @@ namespace Red.Infrastructure.Spider
 
             // MERGE TITLE & SLUG
             var title = t.Title.Merge(s.Title);
-            var slug = t.Title.Merge(s.Slug);
+            var slug = t.Slug.Merge(s.Slug);
 
             var publisher = PickValue(x => x.Publisher, t, s);
             var developer = PickValue(x => x.Developer, t, s);

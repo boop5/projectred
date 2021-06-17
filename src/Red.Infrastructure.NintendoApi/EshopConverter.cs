@@ -67,6 +67,7 @@ namespace Red.Infrastructure.NintendoApi
             var title = new CountryDictionary<string>();
             if (!string.IsNullOrWhiteSpace(game.Title))
             {
+                // todo: normalize title (remove non-ascii symbols)
                 title[lang] = game.Title;
             }
 

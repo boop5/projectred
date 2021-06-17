@@ -12,7 +12,6 @@ using AngleSharp.Dom;
 using AngleSharp.Scripting;
 using Jint.Native.Array;
 using Jint.Native.Object;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
@@ -193,25 +192,25 @@ namespace Red.Infrastructure.Spider.Worker
         private async Task<IReadOnlyCollection<VideoDetail>> LoadVideoDetails(IEnumerable<Video> videos)
         {
             var result = videos.Where(x => !string.IsNullOrWhiteSpace(x.PlaylistUrl))
-                                .Select(async x => await new HttpClient().GetAsync(x.PlaylistUrl))
-                                .Select(x => x.Result)
-                                .Where(x => x.IsSuccessStatusCode)
-                                .Select(async x => await x.Content.ReadAsStringAsync())
-                                .Select(x => x.Result)
-                                .Select(x => JsonSerializer.Deserialize<Playlist>(x))
-                                .Where(x => x != null)
-                                .SelectMany(x => x.mediaList)
-                                .Where(x => x.mobileUrls.Any(y => y.targetMediaPlatform == "MobileH264"))
-                                .Select(
-                                    x =>
-                                        new VideoDetail
-                                        {
-                                            Title = x.title,
-                                            Url = x.mobileUrls.First(y => y.targetMediaPlatform == "MobileH264").mobileUrl,
-                                            Duration = x.durationInMilliseconds,
-                                            PreviewImage = x.previewImageUrl
-                                        })
-                                .ToList();
+                               .Select(async x => await new HttpClient().GetAsync(x.PlaylistUrl))
+                               .Select(x => x.Result)
+                               .Where(x => x.IsSuccessStatusCode)
+                               .Select(async x => await x.Content.ReadAsStringAsync())
+                               .Select(x => x.Result)
+                               .Select(x => JsonSerializer.Deserialize<Playlist>(x))
+                               .Where(x => x != null)
+                               .SelectMany(x => x.mediaList)
+                               .Where(x => x.mobileUrls.Any(y => y.targetMediaPlatform == "MobileH264"))
+                               .Select(
+                                   x =>
+                                       new VideoDetail
+                                       {
+                                           Title = x.title,
+                                           Url = x.mobileUrls.First(y => y.targetMediaPlatform == "MobileH264").mobileUrl,
+                                           Duration = x.durationInMilliseconds,
+                                           PreviewImage = x.previewImageUrl
+                                       })
+                               .ToList();
             return result;
         }
 
@@ -248,8 +247,9 @@ namespace Red.Infrastructure.Spider.Worker
             public int durationInMilliseconds { get; } = 0;
             public List<string> flags { get; init; } = new();
             public string mediaId { get; init; } = "";
+
             // ReSharper disable once CollectionNeverUpdated.Local
-            public List<mobileUrlItem> mobileUrls { get; init; } = new();
+            public List<mobileUrlItem> mobileUrls { get; } = new();
             public int positionInChannel { get; init; } = 0;
             public string previewImageUrl { get; } = "";
             public string thumbnailImageUrl { get; init; } = "";
@@ -293,8 +293,8 @@ namespace Red.Infrastructure.Spider.Worker
         private readonly IServiceProvider _serviceProvider;
 
         public MediaSpider(IAppLogger<MediaSpider> log,
-                                WorkerSettings configuration,
-                                IServiceProvider serviceProvider)
+                           WorkerSettings configuration,
+                           IServiceProvider serviceProvider)
             : base(log, configuration.MediaSpider)
         {
             _configuration = configuration;
@@ -307,24 +307,13 @@ namespace Red.Infrastructure.Spider.Worker
             {
                 var region = culture.GetTwoLetterISORegionName();
                 ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
-                var gs = await repo.Get()
-                                   .Select(
-                                       x => new SwitchGame
-                                       {
-                                           FsId = x.FsId,
-                                           Media = x.Media,
-                                           EshopUrl = x.EshopUrl
-                                       })
-                                   .ToListAsync();
-                var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl[region]))
-                             // .Where(x => x.Media.LastUpdated < DateTime.Today)
-                             .OrderBy(x => x.FsId)
-                             .Select(
+                var gs = await repo.GetGamesForMediaQuery(culture);
+                var dtos = gs.Select(
                                  x => new ScreenshotDto
                                  {
                                      EshopUrl = x.EshopUrl[region]!,
                                      Media = x.Media,
-                                     FsId = x.FsId,
+                                     FsId = x.FsId
                                  })
                              .ToList();
 
@@ -348,12 +337,16 @@ namespace Red.Infrastructure.Spider.Worker
                     var loader = new GalleriesLoader();
                     var initialized = await loader.Init(url);
 
-                    if (!initialized) continue;
+                    if (!initialized)
+                    {
+                        continue;
+                    }
+
                     var entity = await repo.GetByFsId(dto.FsId);
 
 
                     var media = entity.Media.Merge(entity.Media); // clone
-                    media[region] ??= new();
+                    media[region] ??= new SwitchGameMedia();
 
                     media[region] = new SwitchGameMedia
                     {
@@ -362,11 +355,12 @@ namespace Red.Infrastructure.Spider.Worker
                         LastUpdated = DateTime.UtcNow
                     };
 
-                    var updatedEntity = entity with { Media = media };
+                    var updatedEntity = entity with {Media = media};
 
                     if (!entity.Media.Equals(updatedEntity.Media))
                     {
-                        Log.LogInformation($"Update {entity.FsId} ({updatedEntity.Media[lang].Screenshots.Count} screenshots, {updatedEntity.Media[region].Videos.Count} videos");
+                        Log.LogInformation(
+                            $"Update {entity.FsId} ({updatedEntity.Media[lang].Screenshots.Count} screenshots, {updatedEntity.Media[region].Videos.Count} videos");
                         await repo.UpdateAsync(updatedEntity);
                     }
 
@@ -382,8 +376,8 @@ namespace Red.Infrastructure.Spider.Worker
         private class ScreenshotDto
         {
             public string EshopUrl { get; init; } = "";
-            public CountryDictionary<SwitchGameMedia> Media { get; init; } = new();
             public string FsId { get; init; } = "";
+            public CountryDictionary<SwitchGameMedia> Media { get; init; } = new();
             public string Region { get; init; } = "";
         }
     }

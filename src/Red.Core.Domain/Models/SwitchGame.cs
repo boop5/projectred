@@ -69,8 +69,8 @@ namespace Red.Core.Domain.Models
                    && ContentRating.Equals(other.ContentRating) 
                    && Description.Equals(other.Description)
                    && Popularity == other.Popularity 
-                   && Title == other.Title 
-                   && Slug == other.Slug
+                   && Title.Equals(other.Title)
+                   && Slug.Equals(other.Slug)
                    && Publisher == other.Publisher 
                    && Developer == other.Developer 
                    && Nullable.Equals(ReleaseDate, other.ReleaseDate)

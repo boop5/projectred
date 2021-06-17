@@ -45,6 +45,10 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
+            // foreach culture
+            // load games from nintendo api (IEshop)
+            //  
+
             foreach (var culture in _configuration.Cultures)
             {
                 var queries = await BuildQueries(culture, _configuration.LibrarySpider.QuerySize);
@@ -79,7 +83,7 @@ namespace Red.Infrastructure.Spider.Worker
 
             try
             {
-                var dbEntity = await repo.GetMatchingGame(game, culture);
+                var dbEntity = await repo.GetByFsId(game.FsId);
 
                 if (dbEntity == null)
                 {
