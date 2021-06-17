@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.Spider.Settings;
@@ -76,7 +75,7 @@ namespace Red.Infrastructure.Spider.Worker
 
         private async Task UpdateGame(CultureInfo culture, ISwitchGameRepository repo, SwitchGame game)
         {
-            var region = culture.GetTwoLetterISORegionName();
+            var lang = culture.TwoLetterISOLanguageName;
 
             try
             {
@@ -84,7 +83,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 if (dbEntity == null)
                 {
-                    Log.LogInformation("Add new game {title} ({fsId})", game.Title[region] ?? "", game.FsId);
+                    Log.LogInformation("Add new game {title} ({fsId})", game.Title[lang] ?? "", game.FsId);
 
                     // todo: handle slug issue (minefield ...)
                     await repo.AddAsync(game);
@@ -96,16 +95,16 @@ namespace Red.Infrastructure.Spider.Worker
                     if (!Equals(updatedEntity, dbEntity))
                     {
                         Log.LogInformation(
-                            "Update existing Game \"{title}\" [{productCode}]",
-                            updatedEntity.Title[region] ?? "",
-                            updatedEntity.ProductCode);
+                            "Update existing Game \"{title}\" [{fsId}]",
+                            updatedEntity.Title[lang] ?? "",
+                            updatedEntity.FsId);
                         await repo.UpdateAsync(updatedEntity);
                     }
                 }
             }
             catch (Exception e)
             {
-                Log.LogWarning(e, "Failed to update game {game} ({fsId})", game.Title[region] ?? "", game.FsId);
+                Log.LogWarning(e, "Failed to update game {game} ({fsId})", game.Title[lang] ?? "", game.FsId);
             }
         }
     }

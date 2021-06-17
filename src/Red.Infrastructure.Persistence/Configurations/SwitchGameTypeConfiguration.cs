@@ -18,13 +18,7 @@ namespace Red.Infrastructure.Persistence.Configurations
 
             // todo: use pk on fsid only
             builder.HasKey(x => x.FsId)
-                   .HasName("PK_SwitchGame_FsID");
-
-            builder.HasIndex(x => x.Title)
-                   .HasDatabaseName("IX_SwitchGameTitle");
-
-            builder.HasIndex(x => x.Slug)
-                   .HasDatabaseName("IX_SwitchGameSlug");      
+                   .HasName("PK_SwitchGame_FsID"); 
             
             // todo: add index for website filters (search by category, ..)
 

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Red.Infrastructure.Persistence;
 
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20210617214118_RemoveIndexFromTitleRip")]
+    partial class RemoveIndexFromTitleRip
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,7 +118,7 @@ namespace Red.Infrastructure.Persistence.Migrations
                     b.Property<string>("Slug")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(450)")
                         .HasDefaultValue("{}");
 
                     b.Property<bool?>("SupportsCloudSave")
@@ -133,6 +135,9 @@ namespace Red.Infrastructure.Persistence.Migrations
 
                     b.HasKey("FsId")
                         .HasName("PK_SwitchGame_FsID");
+
+                    b.HasIndex("Slug")
+                        .HasDatabaseName("IX_SwitchGameSlug");
 
                     b.ToTable("Games");
                 });
