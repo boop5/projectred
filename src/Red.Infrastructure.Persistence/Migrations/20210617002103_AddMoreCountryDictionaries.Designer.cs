@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Red.Infrastructure.Persistence;
 
 namespace Red.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20210617002103_AddMoreCountryDictionaries")]
+    partial class AddMoreCountryDictionaries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,14 +23,15 @@ namespace Red.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Red.Core.Domain.Models.SwitchGame", b =>
                 {
-                    b.Property<string>("FsId")
+                    b.Property<string>("ProductCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Region")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Categories")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Colors")
                         .IsRequired()
@@ -64,6 +67,9 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("{}");
 
+                    b.Property<string>("FsId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Languages")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -98,12 +104,6 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("{}");
-
                     b.Property<string>("Publisher")
                         .HasColumnType("nvarchar(max)");
 
@@ -114,25 +114,19 @@ namespace Red.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Slug")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("{}");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool?>("SupportsCloudSave")
                         .HasColumnType("bit");
 
                     b.Property<string>("Title")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("{}");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool?>("VoucherPossible")
                         .HasColumnType("bit");
 
-                    b.HasKey("FsId")
-                        .HasName("PK_SwitchGame_FsID");
+                    b.HasKey("ProductCode", "Region")
+                        .HasName("PK_SwitchGame_ProductCodeRegion");
 
                     b.HasIndex("ProductCode")
                         .IsUnique()

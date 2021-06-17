@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.NintendoApi.Models;
@@ -95,9 +94,7 @@ namespace Red.Infrastructure.NintendoApi
             if (searchResult != null)
             {
                 return searchResult.Response.Games
-                                   .Where(x => x.ProductCodeSS?.Count == 1)
-                                   // some games have duplicate entries in the result, so lets remove them
-                                   .DistinctBy(x => x.ProductCodeSS![0])
+                                   .Where(x => !string.IsNullOrWhiteSpace(x.FsId))
                                    .Select(x => _converter.ConvertToSwitchGame(query.Culture, x))
                                    .ToList();
             }

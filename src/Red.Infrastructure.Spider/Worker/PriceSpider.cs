@@ -91,16 +91,18 @@ namespace Red.Infrastructure.Spider.Worker
 
         private async Task UpdateGame(CultureInfo culture, IReadOnlyCollection<SwitchGame> games, SwitchGamePrice price)
         {
+            var region = culture.GetTwoLetterISORegionName();
+            
             try
             {
                 var repo = _repoFactory.Create();
                 var game = games.First(x => x.Nsuids.Contains(price.Nsuid));
-                var entity = (await repo.GetByFsId(game.FsId!))!;
+                var entity = (await repo.GetByFsId(game.FsId))!;
                 var merged = _gameMerger.MergePrice(culture, entity, price);
 
                 if (!entity.Price.Equals(merged.Price))
                 {
-                    Log.LogInformation("Update price for {title} ({FsId})", game.Title ?? "", game.FsId ?? "");
+                    Log.LogInformation("Update price for {title} ({FsId})", game.Title[region] ?? "", game.FsId);
                     await repo.UpdateAsync(merged);
                 }
             }

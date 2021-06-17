@@ -54,6 +54,34 @@ namespace Red.Infrastructure.NintendoApi
                 eshopUrl[region] = game.Url;
             }
 
+            var media = new CountryDictionary<SwitchGameMedia>();
+            if (!string.IsNullOrWhiteSpace(game.image_url_sq_s))
+            {
+                media[region] = new SwitchGameMedia() 
+                { 
+                    Cover = new() { Url = game.image_url_sq_s }
+                };
+            }
+
+            var title = new CountryDictionary<string>();
+            if (!string.IsNullOrWhiteSpace(game.Title))
+            {
+                title[region] = game.Title;
+            }
+
+            var slug = new CountryDictionary<string>();
+            if (!string.IsNullOrWhiteSpace(game.Title))
+            {
+                slug[region] = _slugBuilder.Build(game.Title);
+            }
+
+            var productCode = new CountryDictionary<string>();
+            if (!string.IsNullOrWhiteSpace(game.Title))
+            {
+                // todo: move normalize logic to custom service or w/e
+                productCode[region] = game.ProductCodeSS![0].Trim().Replace("-", "");
+            }
+
             return new()
             {
                 Nsuids = game.Nsuids ?? new List<string>(),
@@ -78,18 +106,13 @@ namespace Red.Infrastructure.NintendoApi
                 Popularity = new CountryDictionary<int>{[region] = game.Popularity ?? int.MaxValue},
                 ReleaseDate = game.ReleaseDate,
                 RemovedFromEshop = game.RemovedFromEshop,
-                Title = game.Title,
+                Title = title,
                 SupportsCloudSave = game.SupportsCloudSave,
-                Slug = _slugBuilder.Build(game.Title),
-                // todo: Insert actual region
-                Region = "EU",
-                ProductCode = game.ProductCodeSS![0].Trim(),
-                FsId = game.FsId,
+                Slug = slug,
+                ProductCode = productCode,
+                FsId = game.FsId!,
+                Media = media,
                 // todo: add missing fields
-                Media = new SwitchGameMedia
-                {
-                    Cover = new ImageDetail { Url = game.image_url_sq_s ?? "" }
-                },
             };
         }
 

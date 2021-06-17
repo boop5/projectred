@@ -15,27 +15,26 @@ namespace Red.Infrastructure.Spider.Worker
     internal sealed class SalesSpider : Spider
     {
         private readonly IEshop _eshop;
+        private readonly WorkerSettings _configuration;
         private readonly IServiceProvider _serviceProvider;
 
-        public SalesSpider(IAppLogger<SalesSpider> log, 
-                           SalesSpiderConfiguration configuration,
-                           IServiceProvider serviceProvider, 
+        public SalesSpider(IAppLogger<SalesSpider> log,
+                           WorkerSettings configuration,
+                           IServiceProvider serviceProvider,
                            IEshop eshop)
-            : base(log, configuration)
+            : base(log, configuration.SalesSpider)
         {
+            _configuration = configuration;
             _serviceProvider = serviceProvider;
             _eshop = eshop;
         }
 
-        private async Task<IReadOnlyCollection<EshopSalesQuery>> GetQueries()
+        private async Task<IReadOnlyCollection<EshopSalesQuery>> GetQueries(CultureInfo culture)
         {
-            // todo: use proper country/locale
-            var culture = new CultureInfo("en-DE");
-
+            var queries = new List<EshopSalesQuery>();
             // todo: move to constants
             var maxPerChunk = 30;
             var totalSales = await _eshop.GetTotalSales(culture);
-            var queries = new List<EshopSalesQuery>();
 
             for (var i = 0; i < totalSales; i += maxPerChunk)
             {
@@ -47,13 +46,15 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            var queries = await GetQueries();
-            var tasks = queries.Select(ProcessQuery);
-
-            await Task.WhenAll(tasks);
+            foreach (var culture in _configuration.Cultures)
+            {
+                var queries = await GetQueries(culture);
+                var tasks = queries.Select(x => ProcessQuery(culture, x));
+                await Task.WhenAll(tasks);
+            }
         }
 
-        private async Task ProcessQuery(EshopSalesQuery query)
+        private async Task ProcessQuery(CultureInfo culture, EshopSalesQuery query)
         {
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
             var response = await _eshop.GetSales(query);
@@ -70,7 +71,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                 var updatedEntity = entity with { };
                 updatedEntity = UpdateColors(updatedEntity, sale);
-                updatedEntity = UpdateHeroBanner(updatedEntity, sale);
+                updatedEntity = UpdateHeroBanner(culture, updatedEntity, sale);
                 updatedEntity = UpdateContentRating(updatedEntity, sale, query);
 
                 if (!entity.Equals(updatedEntity))
@@ -85,7 +86,7 @@ namespace Red.Infrastructure.Spider.Worker
         {
             if (!entity.Colors.SequenceEqual(sale.Colors))
             {
-                return entity with {Colors = sale.Colors};
+                return entity with { Colors = sale.Colors };
             }
 
             return entity;
@@ -100,27 +101,27 @@ namespace Red.Infrastructure.Spider.Worker
                 var newContentRating = entity.ContentRating.ToDictionary().ToDictionary(x => x.Key, x => x.Value);
                 newContentRating[country] = sale.ContentRating;
 
-                return entity with {ContentRating = CountryDictionary<ContentRating>.New(newContentRating)};
+                return entity with { ContentRating = CountryDictionary<ContentRating>.New(newContentRating) };
             }
 
             return entity;
         }
 
-        private SwitchGame UpdateHeroBanner(SwitchGame entity, SwitchGameSale sale)
+        private SwitchGame UpdateHeroBanner(CultureInfo culture, SwitchGame entity, SwitchGameSale sale)
         {
+            var region = culture.GetTwoLetterISORegionName();
+
             if (!string.IsNullOrWhiteSpace(sale.HeroBannerUrl)
-                && !string.Equals(entity.Media.HeroBanner?.Url, sale.HeroBannerUrl))
+                && !string.Equals(entity.Media[region]?.HeroBanner?.Url, sale.HeroBannerUrl))
             {
-                return entity with
+                var media = entity.Media.Merge(entity.Media); // clone
+                media[region] ??= new SwitchGameMedia();
+                media[region] = media[region]! with
                 {
-                    Media = entity.Media with
-                    {
-                        HeroBanner = new ImageDetail
-                        {
-                            Url = sale.HeroBannerUrl
-                        }
-                    }
+                    HeroBanner = new ImageDetail { Url = sale.HeroBannerUrl }
                 };
+
+                return entity with { Media = media };
             }
 
             return entity;

@@ -16,9 +16,9 @@ namespace Red.Infrastructure.Persistence.Configurations
         {
             var serializerOptions = AppJsonOptions.Default;
 
-
-            builder.HasKey(x => new {x.ProductCode, x.Region})
-                   .HasName("PK_SwitchGame_ProductCodeRegion");
+            // todo: use pk on fsid only
+            builder.HasKey(x => x.FsId)
+                   .HasName("PK_SwitchGame_FsID");
 
             builder.HasIndex(x => x.ProductCode)
                    .HasDatabaseName("IX_SwitchGameProductCode")
@@ -35,7 +35,8 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Categories)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>());
+                       x => JsonSerializer.Deserialize<List<string>>(x, serializerOptions) ?? new List<string>())
+                   .HasDefaultValue(new List<string>());
             builder.Property(x => x.Categories)
                    .Metadata
                    .SetValueComparer(BuildValueComparer<string>());
@@ -43,7 +44,8 @@ namespace Red.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Media)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<SwitchGameMedia>(x, serializerOptions) ?? new());
+                       x => JsonSerializer.Deserialize<CountryDictionary<SwitchGameMedia>>(x, serializerOptions) ?? new())
+                   .HasDefaultValue(new CountryDictionary<SwitchGameMedia>());
    
             builder.Property(x => x.Languages)
                    .HasConversion(
@@ -80,32 +82,46 @@ namespace Red.Infrastructure.Persistence.Configurations
                    .SetValueComparer(BuildValueComparer<HexColor>());
 
             builder.Property(x => x.ContentRating)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<ContentRating>>(x, serializerOptions) ?? new CountryDictionary<ContentRating>())
                    .HasDefaultValue(new CountryDictionary<ContentRating>());
-            builder.Property(x => x.ContentRating)
-                   .HasConversion(
-                       x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<CountryDictionary<ContentRating>>(x, serializerOptions) ?? new CountryDictionary<ContentRating>());
 
             builder.Property(x => x.Description)
-                   .HasDefaultValue(new CountryDictionary<string>());
-            builder.Property(x => x.Description)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>());
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
+                   .HasDefaultValue(new CountryDictionary<string>());
 
             builder.Property(x => x.EshopUrl)
-                   .HasDefaultValue(new CountryDictionary<string>());
-            builder.Property(x => x.EshopUrl)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>());
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
+                   .HasDefaultValue(new CountryDictionary<string>());
 
             builder.Property(x => x.Popularity)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<int>>(x, serializerOptions) ?? new CountryDictionary<int>())
                    .HasDefaultValue(new CountryDictionary<int>());
-            builder.Property(x => x.Popularity)
+
+            builder.Property(x => x.Title)
                    .HasConversion(
                        x => JsonSerializer.Serialize(x, serializerOptions),
-                       x => JsonSerializer.Deserialize<CountryDictionary<int>>(x, serializerOptions) ?? new CountryDictionary<int>());
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
+                   .HasDefaultValue(new CountryDictionary<string>());
+
+            builder.Property(x => x.Slug)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
+                   .HasDefaultValue(new CountryDictionary<string>());
+
+            builder.Property(x => x.ProductCode)
+                   .HasConversion(
+                       x => JsonSerializer.Serialize(x, serializerOptions),
+                       x => JsonSerializer.Deserialize<CountryDictionary<string>>(x, serializerOptions) ?? new CountryDictionary<string>())
+                   .HasDefaultValue(new CountryDictionary<string>());
         }
 
         private static List<HexColor> DeserializeColors(string json, JsonSerializerOptions serializerOptions)

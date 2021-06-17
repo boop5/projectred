@@ -21,48 +21,14 @@ namespace Red.Infrastructure.Spider
         public SwitchGame MergeLibrary(SwitchGame t, SwitchGame s)
         {
             // CHECK ABNORMALITIES
-            if (!string.Equals(t.ProductCode, s.ProductCode, StringComparison.InvariantCultureIgnoreCase))
-            {
-                Debugger.Break();
-
-                if (string.Equals(t.Title, s.Title, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    Log.LogCritical(
-                        "ProductCode differs but the titles are equal. "
-                        + "Might be a duplicated name (ie Minefield) "
-                        + "- please check this manually! {targetEntity} {sourceEntity}",
-                        t,
-                        s);
-                    return t;
-                }
-
-                Log.LogCritical("ProductCode differs - please check this manually! {targetEntity} {sourceEntity}", t, s);
-            }
-
-            if (!string.Equals(t.Region, s.Region, StringComparison.InvariantCultureIgnoreCase))
-            {
-                Log.LogCritical("You are trying to merge games from different regions! {targetEntity} {sourceEntity}", t, s);
-                Debugger.Break();
-                return t;
-            }
-
-            if (!t.Price.Equals(s.Price) && !Equals(s.Price, new CountryDictionary<SwitchGamePriceDetails>()))
+            if (!t.Price.Equals(s.Price) && !Equals(s.Price, new()) && s.Price.Keys.Count > 0)
             {
                 Log.LogCritical("Price actually should not be different when merging the library.. {targetEntity} {sourceEntity}", t, s);
                 Debugger.Break();
                 return t;
             }
 
-            if (!t.Media.Equals(s.Media) && !Equals(s.Media, SwitchGameMedia.Default))
-            {
-                Log.LogCritical("Media actually should not be different when merging the library.. {targetEntity} {sourceEntity}", t, s);
-                Debugger.Break();
-                return t;
-            }
-
-            if (!string.IsNullOrWhiteSpace(t.FsId)
-                && !string.IsNullOrWhiteSpace(s.FsId)
-                && !string.Equals(t.FsId, s.FsId, StringComparison.InvariantCulture))
+            if (!string.Equals(t.FsId, s.FsId, StringComparison.InvariantCulture))
             {
                 Log.LogCritical("FsId differs - please check this manually! {targetEntity} {sourceEntity}", t, s);
                 Debugger.Break();
@@ -70,7 +36,7 @@ namespace Red.Infrastructure.Spider
             }
 
             var fsid = t.FsId;
-            if (string.IsNullOrWhiteSpace(t.FsId) && !string.IsNullOrWhiteSpace(s.FsId))
+            if (!string.Equals(t.FsId, s.FsId, StringComparison.InvariantCulture))
             {
                 fsid = s.FsId;
             }
@@ -139,14 +105,8 @@ namespace Red.Infrastructure.Spider
             }
 
             // MERGE TITLE & SLUG
-            var title = t.Title;
-            var slug = t.Slug;
-            if (!string.Equals(t.Title, s.Title, StringComparison.InvariantCulture)
-                && !string.IsNullOrWhiteSpace(s.Title))
-            {
-                title = s.Title;
-                slug = s.Slug;
-            }
+            var title = t.Title.Merge(s.Title);
+            var slug = t.Title.Merge(s.Slug);
 
             var publisher = PickValue(x => x.Publisher, t, s);
             var developer = PickValue(x => x.Developer, t, s);

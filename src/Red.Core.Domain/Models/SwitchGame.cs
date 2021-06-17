@@ -11,10 +11,9 @@ namespace Red.Core.Domain.Models
         public CountryDictionary<ContentRating> ContentRating { get; init; } = new();
         public CountryDictionary<string> Description { get; init; } = new();
         public CountryDictionary<string> EshopUrl { get; init; } = new();
-        public string? FsId { get; init; }
+        public string FsId { get; init; }
         public List<string> Languages { get; init; } = new(0);
-
-        public SwitchGameMedia Media { get; init; } = new();
+        public CountryDictionary<SwitchGameMedia> Media { get; init; } = new();
         public List<string> Nsuids { get; init; } = new(0);
         public SwitchGamePlayModes PlayModes { get; init; } = new();
 
@@ -23,13 +22,12 @@ namespace Red.Core.Domain.Models
         public CountryDictionary<int> Popularity { get; init; } = new();
 
         public CountryDictionary<SwitchGamePriceDetails> Price { get; init; } = new();
-        public string ProductCode { get; init; } = "";
-        public string Region { get; init; } = "";
+        public CountryDictionary<string> ProductCode { get; init; } = new();
 
         #region Optional
 
-        public string? Title { get; init; }
-        public string? Slug { get; init; }
+        public CountryDictionary<string> Title { get; init; }
+        public CountryDictionary<string> Slug { get; init; }
         public string? Publisher { get; init; }
         public string? Developer { get; init; }
         public DateTime? ReleaseDate { get; init; }
@@ -60,7 +58,6 @@ namespace Red.Core.Domain.Models
 
             return ProductCode == other.ProductCode
                    && FsId == other.FsId
-                   && Region == other.Region
                    && Categories.SequenceEqual(other.Categories) 
                    && Languages.SequenceEqual(other.Languages) 
                    && Nsuids.SequenceEqual(other.Nsuids)
@@ -92,7 +89,6 @@ namespace Red.Core.Domain.Models
             var hashCode = new HashCode();
             hashCode.Add(ProductCode);
             hashCode.Add(FsId);
-            hashCode.Add(Region);
             hashCode.Add(Categories);
             hashCode.Add(Languages);
             hashCode.Add(Nsuids);

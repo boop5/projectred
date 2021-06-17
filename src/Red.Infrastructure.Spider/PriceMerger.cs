@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Red.Core.Application.Extensions;
@@ -81,7 +80,6 @@ namespace Red.Infrastructure.Spider
 
             if (atl == null || PriceDifferent(atl.Amount, lowestPrice))
             {
-                Console.WriteLine($"{_game.Title} {_game.FsId} {atl == null} {PriceDifferent(atl?.Amount, lowestPrice)} {atl?.Amount} {lowestPrice}");
                 atl = Price.New(lowestPrice, _price.Currency);
 
                 return details with { AllTimeLow = atl };

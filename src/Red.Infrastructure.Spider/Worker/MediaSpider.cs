@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -304,38 +305,37 @@ namespace Red.Infrastructure.Spider.Worker
         {
             foreach (var culture in _configuration.Cultures)
             {
+                var region = culture.GetTwoLetterISORegionName();
                 ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
                 var gs = await repo.Get()
                                    .Select(
                                        x => new SwitchGame
                                        {
                                            FsId = x.FsId,
-                                           Region = x.Region,
                                            Media = x.Media,
                                            EshopUrl = x.EshopUrl
                                        })
                                    .ToListAsync();
-                var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl[culture.GetTwoLetterISORegionName()]))
+                var dtos = gs.Where(x => !string.IsNullOrWhiteSpace(x.EshopUrl[region]))
                              // .Where(x => x.Media.LastUpdated < DateTime.Today)
                              .OrderBy(x => x.FsId)
                              .Select(
                                  x => new ScreenshotDto
                                  {
-                                     EshopUrl = x.EshopUrl[culture.GetTwoLetterISORegionName()]!,
-                                     Pictures = x.Media,
+                                     EshopUrl = x.EshopUrl[region]!,
+                                     Media = x.Media,
                                      FsId = x.FsId,
-                                     Region = x.Region
                                  })
                              .ToList();
 
-                Log.LogWarning($"UPDATE {dtos.Count} games");
-                await UpdateScreenshots(dtos);
+                await UpdateScreenshots(culture, dtos);
             }
         }
 
-        private async Task UpdateScreenshots(IEnumerable<ScreenshotDto> chunk)
+        private async Task UpdateScreenshots(CultureInfo culture, IEnumerable<ScreenshotDto> chunk)
         {
-            ISwitchGameRepository repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
+            var region = culture.GetTwoLetterISORegionName();
+            var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
 
             foreach (var dto in chunk)
             {
@@ -350,20 +350,22 @@ namespace Red.Infrastructure.Spider.Worker
                     if (!initialized) continue;
                     var entity = await repo.GetByFsId(dto.FsId);
 
-                    var updatedEntity = entity with
+
+                    var media = entity.Media.Merge(entity.Media); // clone
+                    media[region] ??= new();
+
+                    media[region] = new SwitchGameMedia
                     {
-                        Media = new SwitchGameMedia
-                        {
-                            Screenshots = entity.Media.Screenshots.Union(loader.GetScreenshots()).Distinct().ToList(),
-                            Videos = entity.Media.Videos.Union(await loader.GetVideos()).Distinct().ToList(),
-                            Cover = entity.Media.Cover,
-                            LastUpdated = DateTime.UtcNow
-                        }
+                        Screenshots = entity.Media[region].Screenshots.Union(loader.GetScreenshots()).Distinct().ToList(),
+                        Videos = entity.Media[region].Videos.Union(await loader.GetVideos()).Distinct().ToList(),
+                        LastUpdated = DateTime.UtcNow
                     };
+
+                    var updatedEntity = entity with { Media = media };
 
                     if (!entity.Media.Equals(updatedEntity.Media))
                     {
-                        Log.LogInformation($"Update {entity.ProductCode} ({updatedEntity.Media.Screenshots.Count} screenshots, {updatedEntity.Media.Videos.Count} videos");
+                        Log.LogInformation($"Update {entity.FsId} ({updatedEntity.Media[region].Screenshots.Count} screenshots, {updatedEntity.Media[region].Videos.Count} videos");
                         await repo.UpdateAsync(updatedEntity);
                     }
 
@@ -379,7 +381,7 @@ namespace Red.Infrastructure.Spider.Worker
         private class ScreenshotDto
         {
             public string EshopUrl { get; init; } = "";
-            public SwitchGameMedia Pictures { get; init; } = new();
+            public CountryDictionary<SwitchGameMedia> Media { get; init; } = new();
             public string FsId { get; init; } = "";
             public string Region { get; init; } = "";
         }

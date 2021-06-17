@@ -20,7 +20,7 @@ namespace Red.Infrastructure.Persistence
             return GetByFsId(game.FsId);
         }
 
-        public async Task<SwitchGame?> GetByFsId(string? fsId)
+        public async Task<SwitchGame?> GetByFsId(string fsId)
         {
             if (!string.IsNullOrWhiteSpace(fsId))
             {

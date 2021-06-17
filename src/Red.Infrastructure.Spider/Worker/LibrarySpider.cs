@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Red.Core.Application.Extensions;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.Spider.Settings;
@@ -75,13 +76,15 @@ namespace Red.Infrastructure.Spider.Worker
 
         private async Task UpdateGame(CultureInfo culture, ISwitchGameRepository repo, SwitchGame game)
         {
+            var region = culture.GetTwoLetterISORegionName();
+
             try
             {
                 var dbEntity = await repo.GetMatchingGame(game, culture);
 
                 if (dbEntity == null)
                 {
-                    Log.LogInformation("Add new game {title} ({fsId})", game.Title ?? "", game.FsId ?? "");
+                    Log.LogInformation("Add new game {title} ({fsId})", game.Title[region] ?? "", game.FsId);
 
                     // todo: handle slug issue (minefield ...)
                     await repo.AddAsync(game);
@@ -94,7 +97,7 @@ namespace Red.Infrastructure.Spider.Worker
                     {
                         Log.LogInformation(
                             "Update existing Game \"{title}\" [{productCode}]",
-                            updatedEntity.Title ?? "",
+                            updatedEntity.Title[region] ?? "",
                             updatedEntity.ProductCode);
                         await repo.UpdateAsync(updatedEntity);
                     }
@@ -102,7 +105,7 @@ namespace Red.Infrastructure.Spider.Worker
             }
             catch (Exception e)
             {
-                Log.LogWarning(e, "Failed to update game {game} ({fsId})", game.Title ?? "", game.FsId ?? "");
+                Log.LogWarning(e, "Failed to update game {game} ({fsId})", game.Title[region] ?? "", game.FsId);
             }
         }
     }
