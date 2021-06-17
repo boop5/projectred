@@ -335,6 +335,7 @@ namespace Red.Infrastructure.Spider.Worker
         private async Task UpdateScreenshots(CultureInfo culture, IEnumerable<ScreenshotDto> chunk)
         {
             var region = culture.GetTwoLetterISORegionName();
+            var lang = culture.TwoLetterISOLanguageName;
             var repo = _serviceProvider.GetRequiredService<ISwitchGameRepository>();
 
             foreach (var dto in chunk)
@@ -356,8 +357,8 @@ namespace Red.Infrastructure.Spider.Worker
 
                     media[region] = new SwitchGameMedia
                     {
-                        Screenshots = entity.Media[region].Screenshots.Union(loader.GetScreenshots()).Distinct().ToList(),
-                        Videos = entity.Media[region].Videos.Union(await loader.GetVideos()).Distinct().ToList(),
+                        Screenshots = entity.Media[lang].Screenshots.Union(loader.GetScreenshots()).Distinct().ToList(),
+                        Videos = entity.Media[lang].Videos.Union(await loader.GetVideos()).Distinct().ToList(),
                         LastUpdated = DateTime.UtcNow
                     };
 
@@ -365,7 +366,7 @@ namespace Red.Infrastructure.Spider.Worker
 
                     if (!entity.Media.Equals(updatedEntity.Media))
                     {
-                        Log.LogInformation($"Update {entity.FsId} ({updatedEntity.Media[region].Screenshots.Count} screenshots, {updatedEntity.Media[region].Videos.Count} videos");
+                        Log.LogInformation($"Update {entity.FsId} ({updatedEntity.Media[lang].Screenshots.Count} screenshots, {updatedEntity.Media[region].Videos.Count} videos");
                         await repo.UpdateAsync(updatedEntity);
                     }
 

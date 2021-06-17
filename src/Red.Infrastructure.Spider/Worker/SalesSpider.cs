@@ -94,12 +94,12 @@ namespace Red.Infrastructure.Spider.Worker
 
         private SwitchGame UpdateContentRating(SwitchGame entity, SwitchGameSale sale, EshopSalesQuery query)
         {
-            var country = query.Culture.GetTwoLetterISORegionName();
+            var region = query.Culture.GetTwoLetterISORegionName();
 
-            if (entity.ContentRating[country]?.Equals(sale.ContentRating) == false)
+            if (entity.ContentRating[region]?.Equals(sale.ContentRating) == false)
             {
                 var newContentRating = entity.ContentRating.ToDictionary().ToDictionary(x => x.Key, x => x.Value);
-                newContentRating[country] = sale.ContentRating;
+                newContentRating[region] = sale.ContentRating;
 
                 return entity with { ContentRating = CountryDictionary<ContentRating>.New(newContentRating) };
             }
@@ -110,9 +110,10 @@ namespace Red.Infrastructure.Spider.Worker
         private SwitchGame UpdateHeroBanner(CultureInfo culture, SwitchGame entity, SwitchGameSale sale)
         {
             var region = culture.GetTwoLetterISORegionName();
+            var lang = culture.TwoLetterISOLanguageName;
 
             if (!string.IsNullOrWhiteSpace(sale.HeroBannerUrl)
-                && !string.Equals(entity.Media[region]?.HeroBanner?.Url, sale.HeroBannerUrl))
+                && !string.Equals(entity.Media[lang]?.HeroBanner?.Url, sale.HeroBannerUrl))
             {
                 var media = entity.Media.Merge(entity.Media); // clone
                 media[region] ??= new SwitchGameMedia();
