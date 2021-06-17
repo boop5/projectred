@@ -9,6 +9,7 @@ namespace Red.Core.Application.Interfaces
     {
         Task<TEntity> AddAsync(TEntity entity);
         Task<IReadOnlyCollection<TEntity>> AddAsync(IReadOnlyCollection<TEntity> entities);
+
         Task<TEntity> UpdateAsync(TEntity entity);
         Task<IReadOnlyCollection<TEntity>> UpdateAsync(IReadOnlyCollection<TEntity> entities);
     }

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Red.Core.Application\Red.Core.Application.csproj" />
+    <ProjectReference Include="..\Red.Infrastructure.CQRS\Red.Infrastructure.CQRS.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.Logging\Red.Infrastructure.Logging.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.NintendoApi\Red.Infrastructure.NintendoApi.csproj" />
     <ProjectReference Include="..\Red.Infrastructure.Persistence\Red.Infrastructure.Persistence.csproj" />

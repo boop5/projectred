@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Red.Core.Application.Common;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 using Red.Infrastructure.Spider.Settings;
@@ -12,21 +13,27 @@ namespace Red.Infrastructure.Spider.Worker
 {
     internal sealed class LibrarySpider : Spider
     {
+        private readonly ICommandBus _commandBus;
+        private readonly IQueryBus _queryBus;
+        private readonly WorkerSettings _configuration;
         private readonly IEshop _eshop;
         private readonly ISwitchGameMerger _gameMerger;
         private readonly ISwitchGameRepositoryFactory _repoFactory;
-        private readonly WorkerSettings _configuration;
 
         public LibrarySpider(IAppLogger<LibrarySpider> log,
                              WorkerSettings configuration,
                              ISwitchGameMerger gameMerger,
                              ISwitchGameRepositoryFactory repoFactory,
+                             ICommandBus commandBus,
+                             IQueryBus queryBus,
                              IEshop eshop)
             : base(log, configuration.LibrarySpider)
         {
             _configuration = configuration;
             _gameMerger = gameMerger;
             _repoFactory = repoFactory;
+            _commandBus = commandBus;
+            _queryBus = queryBus;
             _eshop = eshop;
         }
 
@@ -45,10 +52,6 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
-            // foreach culture
-            // load games from nintendo api (IEshop)
-            //  
-
             foreach (var culture in _configuration.Cultures)
             {
                 var queries = await BuildQueries(culture, _configuration.LibrarySpider.QuerySize);
