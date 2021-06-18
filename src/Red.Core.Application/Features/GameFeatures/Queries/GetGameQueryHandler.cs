@@ -6,7 +6,7 @@ using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Features.GameFeatures.Queries
 {
-    public class GetGameQueryHandler : IRequestHandler<GetGameQuery, SwitchGame?>
+    internal sealed class GetGameQueryHandler : IRequestHandler<GetGameQuery, SwitchGame?>
     {
         private readonly ISwitchGameRepositoryFactory _repositoryFactory;
 

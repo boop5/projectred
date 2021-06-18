@@ -16,6 +16,7 @@ namespace Red.Infrastructure.CQRS
 
             services.AddTransient<ICommandBus, CommandBus>();
             services.AddTransient<IQueryBus, QueryBus>();
+            services.AddTransient<IEventBus, EventBus>();
 
             return services;
         }
@@ -30,9 +31,9 @@ namespace Red.Infrastructure.CQRS
             _mediator = mediator;
         }
 
-        public Task<TResponse> Send<TResponse>(IQuery<TResponse> command, CancellationToken cancellationToken = default)
+        public Task<TResponse> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
         {
-            return _mediator.Send(command, cancellationToken);
+            return _mediator.Send(query, cancellationToken);
         }
     }
 
@@ -54,6 +55,21 @@ namespace Red.Infrastructure.CQRS
         public async Task<TResponse> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
         {
             return await _mediator.Send(command, cancellationToken);
+        }
+    }
+
+    internal sealed class EventBus :  IEventBus
+    {
+        private readonly IMediator _mediator;
+
+        public EventBus(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        public async Task Raise(IEvent @event, CancellationToken cancellationToken = default)
+        {
+            await _mediator.Send(@event, cancellationToken);
         }
     }
 }

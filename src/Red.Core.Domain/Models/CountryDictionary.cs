@@ -83,10 +83,12 @@ namespace Red.Core.Domain.Models
                 return true;
             }
 
-            if (Dictionary.Count != other.Dictionary.Count)
+            if (!Dictionary.Keys.SequenceEqual(other.Dictionary.Keys))
             {
                 return false;
             }
+
+            // todo: Equality Comparison is broken here.. ._.
 
             return !Dictionary.Except(other.Dictionary).Any();
         }

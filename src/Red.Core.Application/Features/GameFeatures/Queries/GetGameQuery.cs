@@ -3,7 +3,7 @@ using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Features.GameFeatures.Queries
 {
-    public class GetGameQuery : IQuery<SwitchGame?>
+    public sealed class GetGameQuery : IQuery<SwitchGame?>
     {
         public string FsId { get; }
 

@@ -4,7 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Red.Core.Application.Common;
 using Red.Core.Application.Extensions;
+using Red.Core.Application.Features.GameFeatures.Events;
 using Red.Core.Application.Interfaces;
 using Red.Core.Domain.Models;
 
@@ -12,9 +14,13 @@ namespace Red.Infrastructure.Persistence
 {
     internal sealed class SwitchGameRepository : Repository<SwitchGame>, ISwitchGameRepository
     {
-        public SwitchGameRepository(IDbContextFactory<LibraryContext> contextFactory)
+        private readonly IEventBus _eventBus;
+
+        public SwitchGameRepository(IDbContextFactory<LibraryContext> contextFactory, 
+                                    IEventBus eventBus)
             : base(contextFactory)
         {
+            _eventBus = eventBus;
         }
 
         public async Task<SwitchGame?> GetByFsId(string fsId)
@@ -108,6 +114,38 @@ namespace Red.Infrastructure.Persistence
             var updatedEntity = updateFunc(entity);
 
             return await UpdateAsync(updatedEntity);
+        }
+
+        public override Task<SwitchGame> AddAsync(SwitchGame game)
+        {
+            _eventBus.Raise(new GameAddedEvent(game));   
+            return base.AddAsync(game);
+        }
+
+        public override Task<SwitchGame> UpdateAsync(SwitchGame game)
+        {
+            _eventBus.Raise(new GameUpdatedEvent(game));
+            return base.UpdateAsync(game);
+        }
+
+        public override Task<IReadOnlyCollection<SwitchGame>> AddAsync(IReadOnlyCollection<SwitchGame> games)
+        {
+            foreach (var game in games)
+            {
+                _eventBus.Raise(new GameAddedEvent(game));
+            }
+
+            return base.AddAsync(games);
+        }
+
+        public override Task<IReadOnlyCollection<SwitchGame>> UpdateAsync(IReadOnlyCollection<SwitchGame> games)
+        {
+            foreach (var game in games)
+            {
+                _eventBus.Raise(new GameUpdatedEvent(game));
+            }
+
+            return base.AddAsync(games);
         }
     }
 }
