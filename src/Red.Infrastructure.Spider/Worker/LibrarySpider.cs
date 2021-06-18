@@ -16,10 +16,7 @@ namespace Red.Infrastructure.Spider.Worker
         private readonly WorkerSettings _configuration;
         private readonly IQueryBus _queryBus;
 
-        public LibrarySpider(IAppLogger<LibrarySpider> log,
-                             WorkerSettings configuration,
-                             ICommandBus commandBus,
-                             IQueryBus queryBus)
+        public LibrarySpider(IAppLogger<LibrarySpider> log, WorkerSettings configuration, ICommandBus commandBus, IQueryBus queryBus)
             : base(log, configuration.LibrarySpider)
         {
             _configuration = configuration;
@@ -29,13 +26,16 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
+            var querySize = _configuration.LibrarySpider.QuerySize;
+
             foreach (var culture in _configuration.Cultures)
             {
-                var games = await _queryBus.Send(new GetGamesFromEshopQuery(culture), stoppingToken);
+                var query = new GetGamesFromEshopQuery(culture, querySize);
+                var games = await _queryBus.Send(query, stoppingToken);
 
-                foreach (var chunk in games.ChunkBy(200))
+                foreach (var chunk in games.ChunkBy(querySize))
                 {
-                    var tasks = new List<Task>(200);
+                    var tasks = new List<Task>(querySize);
 
                     foreach (var game in chunk)
                     {

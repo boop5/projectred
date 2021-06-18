@@ -20,7 +20,7 @@ namespace Red.Core.Application.Features.GameFeatures.Queries
         public async Task<IReadOnlyList<SwitchGame>> Handle(GetGamesFromEshopQuery request, CancellationToken cancellationToken)
         {
             var result = new List<SwitchGame>();
-            var queries = await BuildQueries(request.Culture, 200);
+            var queries = await BuildQueries(request.Culture, request.QuerySize);
 
             foreach (var query in queries)
             {
@@ -43,25 +43,5 @@ namespace Red.Core.Application.Features.GameFeatures.Queries
 
             return queries;
         }
-
-        /*private async Task ProcessQuery(EshopGameQuery query)
-        {
-            try
-            {
-                var repo = _repoFactory.Create();
-                var games = await _eshop.SearchGames(query);
-                Log.LogDebug("Process {count} games", games.Count);
-
-                foreach (var game in games)
-                {
-                    await UpdateGame(query.Culture, repo, game);
-                }
-            }
-            catch (Exception e)
-            {
-                // Log.LogWarning(e, "Failed to process query {query}", query);
-            }
-        }*/
-
     }
 }
