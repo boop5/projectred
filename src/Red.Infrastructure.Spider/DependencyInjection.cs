@@ -7,7 +7,7 @@ namespace Red.Infrastructure.Spider
 {
     internal static class DependencyInjection
     {
-        public static IServiceCollection AddEntityMerger(this IServiceCollection services)
+        public static IServiceCollection AddSpiderLayer(this IServiceCollection services)
         {
             services.AddTransient<ISwitchGameMerger, SwitchGameMerger>();
 

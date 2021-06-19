@@ -7,7 +7,7 @@ using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Features.GameFeatures.Events
 {
-    public class GameAddedEventHandler : IRequestHandler<GameAddedEvent>
+    public sealed class GameAddedEventHandler : IRequestHandler<GameAddedEvent>
     {
         private IAppLogger<GameAddedEventHandler> Log { get; }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Red.Core.Application.Common;
@@ -6,6 +7,7 @@ using Red.Core.Application.Extensions;
 using Red.Core.Application.Features.GameFeatures.Commands;
 using Red.Core.Application.Features.GameFeatures.Queries;
 using Red.Core.Application.Interfaces;
+using Red.Core.Domain.Models;
 using Red.Infrastructure.Spider.Settings;
 
 namespace Red.Infrastructure.Spider.Worker
@@ -26,6 +28,9 @@ namespace Red.Infrastructure.Spider.Worker
 
         protected override async Task LoopAsync(CancellationToken stoppingToken = default)
         {
+            await _commandBus.Send(new UpdateGameCommand(new CultureInfo("de-DE"), new SwitchGame()));
+            return;
+
             var querySize = _configuration.LibrarySpider.QuerySize;
 
             foreach (var culture in _configuration.Cultures)

@@ -7,7 +7,7 @@ using Red.Core.Application.Interfaces;
 
 namespace Red.Core.Application.Features.GameFeatures.Commands
 {
-    public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand>
+    public sealed class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand>
     {
         private readonly ISwitchGameMerger _gameMerger;
         private readonly ISwitchGameRepository _repo;

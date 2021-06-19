@@ -4,7 +4,7 @@ using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Features.GameFeatures.Commands
 {
-    public class UpdateGameCommand : ICommand
+    public sealed class UpdateGameCommand : ICommand
     {
         public CultureInfo Culture { get; }
         public SwitchGame Game { get; }

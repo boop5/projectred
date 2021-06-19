@@ -42,7 +42,7 @@ namespace Red.Core.Domain.Models
 
         public CountryDictionary<T> Merge(CountryDictionary<T> other)
         {
-            var newDict = New(ToDictionary());
+            var newDict = new CountryDictionary<T>() {Dictionary = Dictionary.ToDictionary(x => x.Key, x => x.Value)};
 
             foreach (var key in other.Keys)
             {
@@ -57,11 +57,6 @@ namespace Red.Core.Domain.Models
             }
 
             return newDict;
-        }
-
-        public static CountryDictionary<T> New(IReadOnlyDictionary<string, T> dictionary)
-        {
-            return new() {Dictionary = dictionary.ToDictionary(x => x.Key, x => x.Value)};
         }
 
         public IReadOnlyDictionary<string, T> ToDictionary()
@@ -86,6 +81,17 @@ namespace Red.Core.Domain.Models
             if (!Dictionary.Keys.SequenceEqual(other.Dictionary.Keys))
             {
                 return false;
+            }
+
+            foreach (var key in Dictionary.Keys)
+            {
+                if (this[key] is IList<object> a && other[key] is IList<object> b)
+                {
+                    if (!a.SequenceEqual(b))
+                    {
+                        return false;
+                    }
+                }
             }
 
             // todo: Equality Comparison is broken here.. ._.

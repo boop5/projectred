@@ -98,10 +98,10 @@ namespace Red.Infrastructure.Spider.Worker
 
             if (entity.ContentRating[region]?.Equals(sale.ContentRating) == false)
             {
-                var newContentRating = entity.ContentRating.ToDictionary().ToDictionary(x => x.Key, x => x.Value);
+                var newContentRating = entity.ContentRating.Merge(entity.ContentRating);
                 newContentRating[region] = sale.ContentRating;
 
-                return entity with { ContentRating = CountryDictionary<ContentRating>.New(newContentRating) };
+                return entity with { ContentRating = newContentRating };
             }
 
             return entity;

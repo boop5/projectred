@@ -3,7 +3,7 @@ using Red.Core.Domain.Models;
 
 namespace Red.Core.Application.Features.GameFeatures.Events
 {
-    public class GameAddedEvent : IEvent
+    public sealed class GameAddedEvent : IEvent
     {
         public SwitchGame Game { get; }
 
